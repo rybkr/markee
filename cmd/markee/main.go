@@ -2,6 +2,7 @@ package main
 
 import (
     "flag"
+    "fmt"
     "log"
     "os"
 )
@@ -23,12 +24,14 @@ func main() {
         log.Fatal("no input file provided")
     }
 
-    // Check if the file exists
-    if _, err := os.Stat(inputFile); err != nil {
+    data, err := os.ReadFile(inputFile)
+    if err != nil {
         if os.IsNotExist(err) {
             log.Fatalf("file %q does not exist", inputFile)
         } else {
             log.Fatalf("error checking file %q: %v", inputFile, err)
         }
     }
+
+    fmt.Println(string(data))
 }
