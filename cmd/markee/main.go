@@ -2,7 +2,7 @@ package main
 
 import (
     "flag"
-    "fmt"
+    "log"
     "os"
 )
 
@@ -18,8 +18,17 @@ func main() {
         inputFile = flag.Arg(0)
     }
 
+    // Early exit if no input file is given
     if inputFile == "" {
-        fmt.Fprintln(os.Stderr, "no input file provided")
-        os.Exit(1)
+        log.Fatal("no input file provided")
+    }
+
+    // Check if the file exists
+    if _, err := os.Stat(inputFile); err != nil {
+        if os.IsNotExist(err) {
+            log.Fatalf("file %q does not exist", inputFile)
+        } else {
+            log.Fatalf("error checking file %q: %v", inputFile, err)
+        }
     }
 }
