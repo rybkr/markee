@@ -4,14 +4,18 @@ import (
     "flag"
     "fmt"
     "log"
+    "markee/internal/lexer"
     "os"
 )
 
 func main() {
     var inputFile string
+    var lexMode bool
 
     flag.StringVar(&inputFile, "i", "", "input file path")
     flag.StringVar(&inputFile, "input", "", "input file path")
+    flag.BoolVar(&lexMode, "l", false, "print lexer tokens")
+    flag.BoolVar(&lexMode, "lex", false, "print lexer tokens")
     flag.Parse()
 
     // If no input flag is given, check the first positional argument
@@ -33,5 +37,11 @@ func main() {
         }
     }
 
-    fmt.Println(string(data))
+    if lexMode {
+        l := lexer.New(string(data))
+        for _, tok := range l.Tokenize() {
+            fmt.Printf("%s:%d:%d %-8s %q\n", inputFile, tok.Line, tok.Column, tok.Type.String(), tok.Value)
+        }
+        os.Exit(0)
+    }
 }
