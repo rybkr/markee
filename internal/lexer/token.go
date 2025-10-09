@@ -46,36 +46,36 @@ func (t TokenType) String() string {
     case TokenEOF:
         return "EOF"
     case TokenText:
-        return "TEXT"
+        return "Text"
     case TokenSpace:
-        return "SPACE"
+        return "Space"
     case TokenNewline:
-        return "NEWLINE"
+        return "Newline"
     case TokenHeader:
-        return "HEADER"
+        return "Header"
     case TokenCodeFence:
-        return "CODEFENCE"
+        return "CodeFence"
     case TokenBlockquote:
-        return "BLOCKQUOTE"
+        return "Blockquote"
     case TokenListMarker:
-        return "LISTMARKER"
+        return "ListMarker"
     case TokenBacktick:
-        return "BACKTICK"
+        return "Backtick"
     case TokenStar:
-        return "STAR"
+        return "Star"
     case TokenUnderscore:
-        return "UNDERSCORE"
+        return "Underscore"
     case TokenBracketOpen:
-        return "BRACKETOPEN"
+        return "BracketOpen"
     case TokenBracketClose:
-        return "BRACKETCLOSE"
+        return "BracketClose"
     case TokenParenOpen:
-        return "PARENOPEN"
+        return "ParenOpen"
     case TokenParenClose:
-        return "PARENCLOSE"
+        return "ParenClose"
     case TokenBang:
-        return "BANG"
+        return "Bang"
     default:
-        return "ERROR"
+        return "Error"
     }
 }
