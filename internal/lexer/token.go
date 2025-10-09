@@ -41,20 +41,6 @@ type Token struct {
     Column   int       // Column where token starts (1-indexed)
 }
 
-// Context represents where we are in the document structure.
-// This allows the lexer to make context-sensitive decisions about what characters mean.
-type Context int
-
-const (
-    CtxLineStart Context = iota // At the beginning of a line
-    CtxInline                   // In the middle of a line
-    CtxCodeBlock                // Inside a fenced code block
-)
-
-func isTokenChar(char rune) bool {
-    return char == 0
-}
-
 func (t TokenType) String() string {
     switch t {
     case EOF:
