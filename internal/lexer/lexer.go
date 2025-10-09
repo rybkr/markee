@@ -80,3 +80,16 @@ func (l *Lexer) emit(t TokenType) {
     })
     l.start = l.pos
 }
+
+// ignore discards any text between start and pos.
+// Useful for skipping whitespace that does not need to be a token.
+func (l *Lexer) ignore() {
+    l.start = l.pos
+}
+
+// abort resets pos to start, restarting parsing the current token.
+// Because tokens never span multiple lines, we can faithfully restore the column.
+func (l *Lexer) abort() {
+    l.column -= l.pos - l.start
+    l.pos = l.start
+}

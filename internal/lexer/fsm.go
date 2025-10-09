@@ -91,9 +91,30 @@ func lexInline(l *Lexer) stateFunc {
     }
 }
 
-// lexHeader
+// lexHeader recognizes header markers (# ## ### etc) at line start.
+// Headers must be at the start of a line and followed by a space.
 func lexHeader(l *Lexer) stateFunc {
-    return nil
+    for l.peek() == '#' && l.pos - l.start < 6 {
+        l.next()
+    }
+
+    // Headers must be followed by whitespace to be valid
+    next := l.peek()
+    if next != ' ' && next != '\t' {
+        // Not a valid header, abort lexHeader
+        l.abort()
+        return lexInline
+    }
+
+    l.emit(TokenHeader)
+
+    for l.peek() == ' ' || l.peek() == '\t' {
+        l.next()
+        l.ignore()
+    }
+
+    l.context = CtxInline
+    return lexInline
 }
 
 // lexBlockquote
