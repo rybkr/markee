@@ -26,7 +26,7 @@ const (
 
     // Links and images
     TokenBracketOpen  // [
-    TokenBracketClode // ]
+    TokenBracketClose // ]
     TokenParenOpen    // (
     TokenParenClose   // )
     TokenBang         // !
@@ -43,11 +43,39 @@ type Token struct {
 
 func (t TokenType) String() string {
     switch t {
-    case EOF:
+    case TokenEOF:
         return "EOF"
-    case TEXT:
+    case TokenText:
         return "TEXT"
+    case TokenSpace:
+        return "SPACE"
+    case TokenNewline:
+        return "NEWLINE"
+    case TokenHeader:
+        return "HEADER"
+    case TokenCodeFence:
+        return "CODEFENCE"
+    case TokenBlockquote:
+        return "BLOCKQUOTE"
+    case TokenListMarker:
+        return "LISTMARKER"
+    case TokenBacktick:
+        return "BACKTICK"
+    case TokenStar:
+        return "STAR"
+    case TokenUnderscore:
+        return "UNDERSCORE"
+    case TokenBracketOpen:
+        return "BRACKETOPEN"
+    case TokenBracketClose:
+        return "BRACKETCLOSE"
+    case TokenParenOpen:
+        return "PARENOPEN"
+    case TokenParenClose:
+        return "PARENCLOSE"
+    case TokenBang:
+        return "BANG"
     default:
-        return "UNKNOWN"
+        return "ERROR"
     }
 }
