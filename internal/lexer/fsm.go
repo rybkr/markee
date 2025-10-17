@@ -117,9 +117,18 @@ func lexHeader(l *Lexer) stateFunc {
     return lexInline
 }
 
-// lexBlockquote
+// lexBlockquote recognizes blockquote markers at line start.
 func lexBlockquote(l *Lexer) stateFunc {
-    return nil
+    l.next()
+    l.emit(TokenBlockquote)
+    
+    for l.peek() == ' ' || l.peek() == '\t' {
+        l.next()
+        l.ignore()
+    }
+    
+    l.context = CtxInline
+    return lexInline
 }
 
 // lexCodeFence
