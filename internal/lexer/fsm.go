@@ -5,9 +5,9 @@ package lexer
 type Context int
 
 const (
-    CtxLineStart Context = iota // At the beginning of a line
-    CtxInline                   // In the middle of a line
-    CtxCodeBlock                // Inside a fenced code block
+	CtxLineStart Context = iota // At the beginning of a line
+	CtxInline                   // In the middle of a line
+	CtxCodeBlock                // Inside a fenced code block
 )
 
 // stateFunc represents a state in the lexer state machine.
@@ -18,178 +18,178 @@ type stateFunc func(*Lexer) stateFunc
 // lexLineStart handles the start of a line.
 // Here, block level syntax can appear (headers, lists, code fences, etc).
 func lexLineStart(l *Lexer) stateFunc {
-    switch l.peek() {
-    case '#':
-        return lexHeader
-    case '>':
-        return lexBlockquote
-    case '`', '~':
-        if l.peekString("```") || l.peekString("~~~") {
-            return lexCodeFence
-        } else {
-            l.context = CtxInline
-            return lexInline
-        }
-    case '-', '*', '+':
-        // Could be a list marker or horizontal rule or emphasis
-        return lexLineStartMarker
-    case '\n':
-        l.next()
-        l.emit(TokenNewline)
-        return lexLineStart
-    case 0:
-        return lexEOF
-    default:
-        // Regular text, switch to inline mode
-        l.context = CtxInline
-        return lexInline
-    }
+	switch l.peek() {
+	case '#':
+		return lexHeader
+	case '>':
+		return lexBlockquote
+	case '`', '~':
+		if l.peekString("```") || l.peekString("~~~") {
+			return lexCodeFence
+		} else {
+			l.context = CtxInline
+			return lexInline
+		}
+	case '-', '*', '+':
+		// Could be a list marker or horizontal rule or emphasis
+		return lexLineStartMarker
+	case '\n':
+		l.next()
+		l.emit(TokenNewline)
+		return lexLineStart
+	case 0:
+		return lexEOF
+	default:
+		// Regular text, switch to inline mode
+		l.context = CtxInline
+		return lexInline
+	}
 }
 
 // lexInline handles inline content and inline markdown syntax.
 // (emphasis, code spans, links, etc).
 func lexInline(l *Lexer) stateFunc {
-    // Consume text until we hit a special character
-    for {
-        switch l.peek() {
-        case '*':
-            if l.pos > l.start {
-                l.emit(TokenText)
-            }
-            return lexStar
-        case '_':
-            if l.pos > l.start {
-                l.emit(TokenText)
-            }
-            return lexUnderscore
-        case '`':
+	// Consume text until we hit a special character
+	for {
+		switch l.peek() {
+		case '*':
+			if l.pos > l.start {
+				l.emit(TokenText)
+			}
+			return lexStar
+		case '_':
+			if l.pos > l.start {
+				l.emit(TokenText)
+			}
+			return lexUnderscore
+		case '`':
 			if l.pos > l.start {
 				l.emit(TokenText)
 			}
 			return lexBacktick
-        case '[', ']', '(', ')':
+		case '[', ']', '(', ')':
 			if l.pos > l.start {
 				l.emit(TokenText)
 			}
 			return lexBracket
-        case '\n':
+		case '\n':
 			if l.pos > l.start {
 				l.emit(TokenText)
 			}
-            l.next()
+			l.next()
 			l.emit(TokenNewline)
 			l.context = CtxLineStart
 			return lexLineStart
-        case 0:
+		case 0:
 			if l.pos > l.start {
 				l.emit(TokenText)
 			}
 			return lexEOF
 		default:
 			l.next()
-        }
-    }
+		}
+	}
 }
 
 // lexHeader recognizes header markers (# ## ### etc) at line start.
 // Headers must be at the start of a line and followed by a space.
 func lexHeader(l *Lexer) stateFunc {
-    for l.peek() == '#' && l.pos - l.start < 6 {
-        l.next()
-    }
+	for l.peek() == '#' && l.pos-l.start < 6 {
+		l.next()
+	}
 
-    // Headers must be followed by whitespace to be valid
-    next := l.peek()
-    if next != ' ' && next != '\t' {
-        // Not a valid header, abort lexHeader
-        l.abort()
-        return lexInline
-    }
+	// Headers must be followed by whitespace to be valid
+	next := l.peek()
+	if next != ' ' && next != '\t' {
+		// Not a valid header, abort lexHeader
+		l.abort()
+		return lexInline
+	}
 
-    l.emit(TokenHeader)
-    l.skipWhitespace()
+	l.emit(TokenHeader)
+	l.skipWhitespace()
 
-    l.context = CtxInline
-    return lexInline
+	l.context = CtxInline
+	return lexInline
 }
 
 // lexBlockquote recognizes blockquote markers at line start.
 func lexBlockquote(l *Lexer) stateFunc {
-    l.next()
-    l.emit(TokenBlockquote)
-    l.skipWhitespace()
-    
-    l.context = CtxInline
-    return lexInline
+	l.next()
+	l.emit(TokenBlockquote)
+	l.skipWhitespace()
+
+	l.context = CtxInline
+	return lexInline
 }
 
 // lexCodeFence
 func lexCodeFence(l *Lexer) stateFunc {
-    l.advance(3)
-    l.emit(TokenCodeFence)
-    l.skipUntilEOL()
+	l.advance(3)
+	l.emit(TokenCodeFence)
+	l.skipUntilEOL()
 
-    if l.peek() == '\n' {
-        l.next()
-        l.emit(TokenNewline)
-    }
+	if l.peek() == '\n' {
+		l.next()
+		l.emit(TokenNewline)
+	}
 
-    l.context = CtxCodeBlock
-    return lexCodeBlockContent
+	l.context = CtxCodeBlock
+	return lexCodeBlockContent
 }
 
 // lexCodeBlockContent handles everything inside a code block.
 // It treats all content as literal text until it finds a closing fence.
 func lexCodeBlockContent(l *Lexer) stateFunc {
-    for l.peek() != 0 {
-        if l.column == 1 && (l.peekString("```") || l.peekString("~~~")) {
-            l.advance(3)
-            l.emit(TokenCodeFence)
-            l.skipUntilEOL()
-            break
-        }
-        if l.peek() == '\n' {
-            if l.pos > l.start {
-                l.emit(TokenText)
-            }
-            l.next()
-            l.emit(TokenNewline)
-        } else {
-            l.next()
-        }
-    }
+	for l.peek() != 0 {
+		if l.column == 1 && (l.peekString("```") || l.peekString("~~~")) {
+			l.advance(3)
+			l.emit(TokenCodeFence)
+			l.skipUntilEOL()
+			break
+		}
+		if l.peek() == '\n' {
+			if l.pos > l.start {
+				l.emit(TokenText)
+			}
+			l.next()
+			l.emit(TokenNewline)
+		} else {
+			l.next()
+		}
+	}
 
-    l.context = CtxInline
-    return lexInline
+	l.context = CtxInline
+	return lexInline
 }
 
 // lexLineStartMarker
 func lexLineStartMarker(l *Lexer) stateFunc {
-    return nil
+	return nil
 }
 
 // lexStar
 func lexStar(l *Lexer) stateFunc {
-    return nil
+	return nil
 }
 
 // lexUnderscore
 func lexUnderscore(l *Lexer) stateFunc {
-    return nil
+	return nil
 }
 
 // lexBacktick
 func lexBacktick(l *Lexer) stateFunc {
-    return nil
+	return nil
 }
 
 // lexBracket
 func lexBracket(l *Lexer) stateFunc {
-    return nil
+	return nil
 }
 
 // lexEOF
 func lexEOF(l *Lexer) stateFunc {
-    l.emit(TokenEOF)
-    return nil
+	l.emit(TokenEOF)
+	return nil
 }
