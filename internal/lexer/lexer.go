@@ -60,6 +60,14 @@ func (l *Lexer) next() rune {
     return r
 }
 
+// advance consumes the next n runes in input.
+// Equivalent to calling next n times and ignoring output.
+func (l *Lexer) advance(n int) {
+    for i := 0; i < n; i++ {
+        l.next()
+    }
+}
+
 // peekString checks if the input at current position starts with s.
 // Does not consume any input.
 func (l *Lexer) peekString(s string) bool {
@@ -92,4 +100,18 @@ func (l *Lexer) ignore() {
 func (l *Lexer) abort() {
     l.column -= l.pos - l.start
     l.pos = l.start
+}
+
+// skipWhitespace consumes and ignores horizontal whitespace.
+func (l *Lexer) skipWhitespace() {
+    for r := l.peek(); r == ' ' || r == '\t'; r = l.next() {
+        l.ignore()
+    }
+}
+
+// skipUntilEOL consumes and ignores everything until the next newline.
+func (l *Lexer) skipUntilEOL() {
+    for r := l.peek(); r != '\n' && r != 0; r = l.next() {
+        l.ignore()
+    }
 }

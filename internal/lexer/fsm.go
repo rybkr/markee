@@ -23,8 +23,8 @@ func lexLineStart(l *Lexer) stateFunc {
         return lexHeader
     case '>':
         return lexBlockquote
-    case '`':
-        if l.peekString("```") {
+    case '`', '~':
+        if l.peekString("```") || l.peekString("~~~") {
             return lexCodeFence
         } else {
             l.context = CtxInline
@@ -107,11 +107,7 @@ func lexHeader(l *Lexer) stateFunc {
     }
 
     l.emit(TokenHeader)
-
-    for l.peek() == ' ' || l.peek() == '\t' {
-        l.next()
-        l.ignore()
-    }
+    l.skipWhitespace()
 
     l.context = CtxInline
     return lexInline
@@ -121,11 +117,7 @@ func lexHeader(l *Lexer) stateFunc {
 func lexBlockquote(l *Lexer) stateFunc {
     l.next()
     l.emit(TokenBlockquote)
-    
-    for l.peek() == ' ' || l.peek() == '\t' {
-        l.next()
-        l.ignore()
-    }
+    l.skipWhitespace()
     
     l.context = CtxInline
     return lexInline
@@ -133,7 +125,42 @@ func lexBlockquote(l *Lexer) stateFunc {
 
 // lexCodeFence
 func lexCodeFence(l *Lexer) stateFunc {
-    return nil
+    l.advance(3)
+    l.emit(TokenCodeFence)
+    l.skipUntilEOL()
+
+    if l.peek() == '\n' {
+        l.next()
+        l.emit(TokenNewline)
+    }
+
+    l.context = CtxCodeBlock
+    return lexCodeBlockContent
+}
+
+// lexCodeBlockContent handles everything inside a code block.
+// It treats all content as literal text until it finds a closing fence.
+func lexCodeBlockContent(l *Lexer) stateFunc {
+    for l.peek() != 0 {
+        if l.column == 1 && (l.peekString("```") || l.peekString("~~~")) {
+            l.advance(3)
+            l.emit(TokenCodeFence)
+            l.skipUntilEOL()
+            break
+        }
+        if l.peek() == '\n' {
+            if l.pos > l.start {
+                l.emit(TokenText)
+            }
+            l.next()
+            l.emit(TokenNewline)
+        } else {
+            l.next()
+        }
+    }
+
+    l.context = CtxInline
+    return lexInline
 }
 
 // lexLineStartMarker

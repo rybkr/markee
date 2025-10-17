@@ -164,3 +164,27 @@ func TestMultiLineBlockquote(t *testing.T) {
     assertTokenAt(t, tokens, 5, TokenNewline, "\n", 3, 0)
     assertTokenAt(t, tokens, 8, TokenEOF, "", 3, 6)
 }
+
+func TestCodeBlock(t *testing.T) {
+    input := `~~~
+#include <stdio.h>
+
+int main() {
+    printf("Hello, World!\n");
+}
+~~~`
+    tokens := New(input).Tokenize()
+    assertTokenAt(t, tokens, 0, TokenCodeFence, "~~~", 1, 1)
+    assertTokenAt(t, tokens, 1, TokenNewline, "\n", 2, 0)
+    assertTokenAt(t, tokens, 2, TokenText, "#include <stdio.h>", 2, 1)
+    assertTokenAt(t, tokens, 3, TokenNewline, "\n", 3, 0)
+    assertTokenAt(t, tokens, 4, TokenNewline, "\n", 4, 0)
+    assertTokenAt(t, tokens, 5, TokenText, "int main() {", 4, 1)
+    assertTokenAt(t, tokens, 6, TokenNewline, "\n", 5, 0)
+    assertTokenAt(t, tokens, 7, TokenText, `    printf("Hello, World!\n");`, 5, 1)
+    assertTokenAt(t, tokens, 8, TokenNewline, "\n", 6, 0)
+    assertTokenAt(t, tokens, 9, TokenText, "}", 6, 1)
+    assertTokenAt(t, tokens, 10, TokenNewline, "\n", 7, 0)
+    assertTokenAt(t, tokens, 11, TokenCodeFence, "~~~", 7, 1)
+    assertTokenAt(t, tokens, 12, TokenEOF, "", 7, 4)
+}
