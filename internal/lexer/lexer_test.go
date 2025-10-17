@@ -2,6 +2,38 @@ package lexer
 
 import "testing"
 
+func assertTokenType(t *testing.T, token Token, expectedType TokenType) {
+    t.Helper()
+    if token.Type != expectedType {
+        t.Errorf("expected token type %v, got %v", expectedType, token.Type)
+    }
+}
+
+func assertTokenValue(t *testing.T, token Token, expectedValue string) {
+    t.Helper()
+    if token.Value != expectedValue {
+        t.Errorf("expected token literal %q, got %q", expectedValue, token.Value)
+    }
+}
+
+func assertTokenPos(t *testing.T, token Token, expectedLine, expectedColumn int) {
+    t.Helper()
+    if token.Line != expectedLine || token.Column != expectedColumn {
+        t.Errorf("expected token position %d:%d, got %d:%d", expectedLine, expectedColumn, token.Line, token.Column)
+    }
+}
+
+func assertTokenAt(t *testing.T, tokens []Token, index int, expectedType TokenType, expectedValue string, expectedLine, expectedColumn int) {
+    t.Helper()
+    if index >= len(tokens) {
+        t.Fatalf("expected token at index %d, but tokens length is %d", index, len(tokens))
+    }
+    assertTokenType(t, tokens[index], expectedType)
+    if expectedValue != "" {
+        assertTokenValue(t, tokens[index], expectedValue)
+    }
+    assertTokenPos(t, tokens[index], expectedLine, expectedColumn)
+}
 func TestEOF(t *testing.T) {
     input := ""
     tokens := New(input).Tokenize()
@@ -101,35 +133,34 @@ func TestHeaderTooManyLevels(t *testing.T) {
     assertTokenAt(t, tokens, 1, TokenEOF, "", 1, 17)
 }
 
-func assertTokenType(t *testing.T, token Token, expectedType TokenType) {
-    t.Helper()
-    if token.Type != expectedType {
-        t.Errorf("expected token type %v, got %v", expectedType, token.Type)
-    }
+func TestBlockquote(t *testing.T) {
+    input := "> Quote"
+    tokens := New(input).Tokenize()
+    assertTokenAt(t, tokens, 0, TokenBlockquote, ">", 1, 1)
+    assertTokenAt(t, tokens, 1, TokenText, "Quote", 1, 3)
+    assertTokenAt(t, tokens, 2, TokenEOF, "", 1, 8)
 }
 
-func assertTokenValue(t *testing.T, token Token, expectedValue string) {
-    t.Helper()
-    if token.Value != expectedValue {
-        t.Errorf("expected token literal %q, got %q", expectedValue, token.Value)
-    }
+func TestBlockquoteNoSpace(t *testing.T) {
+    input := ">Quote"
+    tokens := New(input).Tokenize()
+    assertTokenAt(t, tokens, 0, TokenBlockquote, ">", 1, 1)
+    assertTokenAt(t, tokens, 1, TokenText, "Quote", 1, 2)
+    assertTokenAt(t, tokens, 2, TokenEOF, "", 1, 7)
 }
 
-func assertTokenPos(t *testing.T, token Token, expectedLine, expectedColumn int) {
-    t.Helper()
-    if token.Line != expectedLine || token.Column != expectedColumn {
-        t.Errorf("expected token position %d:%d, got %d:%d", expectedLine, expectedColumn, token.Line, token.Column)
-    }
-}
-
-func assertTokenAt(t *testing.T, tokens []Token, index int, expectedType TokenType, expectedValue string, expectedLine, expectedColumn int) {
-    t.Helper()
-    if index >= len(tokens) {
-        t.Fatalf("expected token at index %d, but tokens length is %d", index, len(tokens))
-    }
-    assertTokenType(t, tokens[index], expectedType)
-    if expectedValue != "" {
-        assertTokenValue(t, tokens[index], expectedValue)
-    }
-    assertTokenPos(t, tokens[index], expectedLine, expectedColumn)
+func TestMultiLineBlockquote(t *testing.T) {
+    input := `> This is a quote
+> continued
+> ...`
+    tokens := New(input).Tokenize()
+    assertTokenAt(t, tokens, 0, TokenBlockquote, ">", 1, 1)
+    assertTokenAt(t, tokens, 3, TokenBlockquote, ">", 2, 1)
+    assertTokenAt(t, tokens, 6, TokenBlockquote, ">", 3, 1)
+    assertTokenAt(t, tokens, 1, TokenText, "This is a quote", 1, 3)
+    assertTokenAt(t, tokens, 4, TokenText, "continued", 2, 3)
+    assertTokenAt(t, tokens, 7, TokenText, "...", 3, 3)
+    assertTokenAt(t, tokens, 2, TokenNewline, "\n", 2, 0)
+    assertTokenAt(t, tokens, 5, TokenNewline, "\n", 3, 0)
+    assertTokenAt(t, tokens, 8, TokenEOF, "", 3, 6)
 }
