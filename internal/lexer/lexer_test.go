@@ -31,6 +31,76 @@ func TestBasicText(t *testing.T) {
     assertTokenAt(t, tokens, 1, TokenEOF, "", 1, 7)
 }
 
+func TestMultiWordText(t *testing.T) {
+    input := "markee is the best"
+    tokens := New(input).Tokenize()
+    assertTokenAt(t, tokens, 0, TokenText, "markee is the best", 1, 1)
+    assertTokenAt(t, tokens, 1, TokenEOF, "", 1, 19)
+}
+
+func TestMultiLineText(t *testing.T) {
+    input := "markee\nis\nthe\nbest" 
+    tokens := New(input).Tokenize()
+    assertTokenAt(t, tokens, 0, TokenText, "markee", 1, 1)
+    assertTokenAt(t, tokens, 2, TokenText, "is", 2, 1)
+    assertTokenAt(t, tokens, 4, TokenText, "the", 3, 1)
+    assertTokenAt(t, tokens, 6, TokenText, "best", 4, 1)
+    assertTokenAt(t, tokens, 1, TokenNewline, "\n", 2, 0)
+    assertTokenAt(t, tokens, 3, TokenNewline, "\n", 3, 0)
+    assertTokenAt(t, tokens, 5, TokenNewline, "\n", 4, 0)
+    assertTokenAt(t, tokens, 7, TokenEOF, "", 4, 5)
+}
+
+func TestHeader(t *testing.T) {
+    input := "# Header 1"
+    tokens := New(input).Tokenize()
+    assertTokenAt(t, tokens, 0, TokenHeader, "#", 1, 1)
+    assertTokenAt(t, tokens, 1, TokenText, "Header 1", 1, 3)
+    assertTokenAt(t, tokens, 2, TokenEOF, "", 1, 11)
+}
+
+func TestMultiLevelHeader(t *testing.T) {
+    input := `# Header 1
+## Header 2
+### Header 3
+#### Header 4
+##### Header 5
+###### Header 6`
+    tokens := New(input).Tokenize()
+    assertTokenAt(t, tokens, 0, TokenHeader, "#", 1, 1)
+    assertTokenAt(t, tokens, 3, TokenHeader, "##", 2, 1)
+    assertTokenAt(t, tokens, 6, TokenHeader, "###", 3, 1)
+    assertTokenAt(t, tokens, 9, TokenHeader, "####", 4, 1)
+    assertTokenAt(t, tokens, 12, TokenHeader, "#####", 5, 1)
+    assertTokenAt(t, tokens, 15, TokenHeader, "######", 6, 1)
+    assertTokenAt(t, tokens, 1, TokenText, "Header 1", 1, 3)
+    assertTokenAt(t, tokens, 4, TokenText, "Header 2", 2, 4)
+    assertTokenAt(t, tokens, 7, TokenText, "Header 3", 3, 5)
+    assertTokenAt(t, tokens, 10, TokenText, "Header 4", 4, 6)
+    assertTokenAt(t, tokens, 13, TokenText, "Header 5", 5, 7)
+    assertTokenAt(t, tokens, 16, TokenText, "Header 6", 6, 8)
+    assertTokenAt(t, tokens, 2, TokenNewline, "\n", 2, 0)
+    assertTokenAt(t, tokens, 5, TokenNewline, "\n", 3, 0)
+    assertTokenAt(t, tokens, 8, TokenNewline, "\n", 4, 0)
+    assertTokenAt(t, tokens, 11, TokenNewline, "\n", 5, 0)
+    assertTokenAt(t, tokens, 14, TokenNewline, "\n", 6, 0)
+    assertTokenAt(t, tokens, 17, TokenEOF, "", 6, 16)
+}
+
+func TestHeaderNoSpace(t *testing.T) {
+    input := "#Header 1"
+    tokens := New(input).Tokenize()
+    assertTokenAt(t, tokens, 0, TokenText, "#Header 1", 1, 1)
+    assertTokenAt(t, tokens, 1, TokenEOF, "", 1, 10)
+}
+
+func TestHeaderTooManyLevels(t *testing.T) {
+    input := "####### Header 7"
+    tokens := New(input).Tokenize()
+    assertTokenAt(t, tokens, 0, TokenText, "####### Header 7", 1, 1)
+    assertTokenAt(t, tokens, 1, TokenEOF, "", 1, 17)
+}
+
 func assertTokenType(t *testing.T, token Token, expectedType TokenType) {
     t.Helper()
     if token.Type != expectedType {
