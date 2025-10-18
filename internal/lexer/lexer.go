@@ -89,6 +89,19 @@ func (l *Lexer) emit(t TokenType) {
 	l.start = l.pos
 }
 
+// emitIfPresent calls emit if there has been any text consumed.
+func (l *Lexer) emitIfPresent(t TokenType) {
+    if l.pos > l.start {
+        l.emit(t)
+    }
+}
+
+// emitRune consumes the current rune and emits it as a token of type t.
+func (l *Lexer) emitRune(t TokenType) {
+    l.next()
+    l.emit(t)
+}
+
 // ignore discards any text between start and pos.
 // Useful for skipping whitespace that does not need to be a token.
 func (l *Lexer) ignore() {
