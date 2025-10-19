@@ -34,22 +34,23 @@ func assertTokenAt(t *testing.T, tokens []Token, index int, expectedType TokenTy
 	}
 	assertTokenPos(t, tokens[index], expectedLine, expectedColumn)
 }
+
 func TestEOF(t *testing.T) {
 	input := ""
-	tokens := New(input).Tokenize()
+	tokens := Tokenize(input)
 	assertTokenAt(t, tokens, 0, TokenEOF, "", 1, 1)
 }
 
 func TestNewline(t *testing.T) {
 	input := "\n"
-	tokens := New(input).Tokenize()
+	tokens := Tokenize(input)
 	assertTokenAt(t, tokens, 0, TokenNewline, "\n", 2, 0)
 	assertTokenAt(t, tokens, 1, TokenEOF, "", 2, 1)
 }
 
 func TestMultipleNewlines(t *testing.T) {
 	input := "\n\n\n"
-	tokens := New(input).Tokenize()
+	tokens := Tokenize(input)
 	assertTokenAt(t, tokens, 0, TokenNewline, "\n", 2, 0)
 	assertTokenAt(t, tokens, 1, TokenNewline, "\n", 3, 0)
 	assertTokenAt(t, tokens, 2, TokenNewline, "\n", 4, 0)
@@ -58,21 +59,21 @@ func TestMultipleNewlines(t *testing.T) {
 
 func TestBasicText(t *testing.T) {
 	input := "markee"
-	tokens := New(input).Tokenize()
+	tokens := Tokenize(input)
 	assertTokenAt(t, tokens, 0, TokenText, "markee", 1, 1)
 	assertTokenAt(t, tokens, 1, TokenEOF, "", 1, 7)
 }
 
 func TestMultiWordText(t *testing.T) {
 	input := "markee is the best"
-	tokens := New(input).Tokenize()
+	tokens := Tokenize(input)
 	assertTokenAt(t, tokens, 0, TokenText, "markee is the best", 1, 1)
 	assertTokenAt(t, tokens, 1, TokenEOF, "", 1, 19)
 }
 
 func TestMultiLineText(t *testing.T) {
 	input := "markee\nis\nthe\nbest"
-	tokens := New(input).Tokenize()
+	tokens := Tokenize(input)
 	assertTokenAt(t, tokens, 0, TokenText, "markee", 1, 1)
 	assertTokenAt(t, tokens, 2, TokenText, "is", 2, 1)
 	assertTokenAt(t, tokens, 4, TokenText, "the", 3, 1)
@@ -85,7 +86,7 @@ func TestMultiLineText(t *testing.T) {
 
 func TestHeader(t *testing.T) {
 	input := "# Header 1"
-	tokens := New(input).Tokenize()
+	tokens := Tokenize(input)
 	assertTokenAt(t, tokens, 0, TokenHeader, "#", 1, 1)
 	assertTokenAt(t, tokens, 1, TokenText, "Header 1", 1, 3)
 	assertTokenAt(t, tokens, 2, TokenEOF, "", 1, 11)
@@ -98,7 +99,7 @@ func TestMultiLevelHeader(t *testing.T) {
 #### Header 4
 ##### Header 5
 ###### Header 6`
-	tokens := New(input).Tokenize()
+	tokens := Tokenize(input)
 	assertTokenAt(t, tokens, 0, TokenHeader, "#", 1, 1)
 	assertTokenAt(t, tokens, 3, TokenHeader, "##", 2, 1)
 	assertTokenAt(t, tokens, 6, TokenHeader, "###", 3, 1)
@@ -121,21 +122,21 @@ func TestMultiLevelHeader(t *testing.T) {
 
 func TestHeaderNoSpace(t *testing.T) {
 	input := "#Header 1"
-	tokens := New(input).Tokenize()
+	tokens := Tokenize(input)
 	assertTokenAt(t, tokens, 0, TokenText, "#Header 1", 1, 1)
 	assertTokenAt(t, tokens, 1, TokenEOF, "", 1, 10)
 }
 
 func TestHeaderTooManyLevels(t *testing.T) {
 	input := "####### Header 7"
-	tokens := New(input).Tokenize()
+	tokens := Tokenize(input)
 	assertTokenAt(t, tokens, 0, TokenText, "####### Header 7", 1, 1)
 	assertTokenAt(t, tokens, 1, TokenEOF, "", 1, 17)
 }
 
 func TestBlockquote(t *testing.T) {
 	input := "> Quote"
-	tokens := New(input).Tokenize()
+	tokens := Tokenize(input)
 	assertTokenAt(t, tokens, 0, TokenBlockquote, ">", 1, 1)
 	assertTokenAt(t, tokens, 1, TokenText, "Quote", 1, 3)
 	assertTokenAt(t, tokens, 2, TokenEOF, "", 1, 8)
@@ -143,7 +144,7 @@ func TestBlockquote(t *testing.T) {
 
 func TestBlockquoteNoSpace(t *testing.T) {
 	input := ">Quote"
-	tokens := New(input).Tokenize()
+	tokens := Tokenize(input)
 	assertTokenAt(t, tokens, 0, TokenBlockquote, ">", 1, 1)
 	assertTokenAt(t, tokens, 1, TokenText, "Quote", 1, 2)
 	assertTokenAt(t, tokens, 2, TokenEOF, "", 1, 7)
@@ -153,7 +154,7 @@ func TestMultiLineBlockquote(t *testing.T) {
 	input := `> This is a quote
 > continued
 > ...`
-	tokens := New(input).Tokenize()
+	tokens := Tokenize(input)
 	assertTokenAt(t, tokens, 0, TokenBlockquote, ">", 1, 1)
 	assertTokenAt(t, tokens, 3, TokenBlockquote, ">", 2, 1)
 	assertTokenAt(t, tokens, 6, TokenBlockquote, ">", 3, 1)
@@ -173,7 +174,7 @@ int main() {
     printf("Hello, World!\n");
 }
 ~~~`
-	tokens := New(input).Tokenize()
+	tokens := Tokenize(input)
 	assertTokenAt(t, tokens, 0, TokenCodeFence, "~~~", 1, 1)
 	assertTokenAt(t, tokens, 1, TokenNewline, "\n", 2, 0)
 	assertTokenAt(t, tokens, 2, TokenText, "#include <stdio.h>", 2, 1)
@@ -192,7 +193,7 @@ int main() {
 func TestEmptyCodeBlock(t *testing.T) {
 	input := `~~~
 ~~~`
-	tokens := New(input).Tokenize()
+	tokens := Tokenize(input)
 	assertTokenAt(t, tokens, 0, TokenCodeFence, "~~~", 1, 1)
 	assertTokenAt(t, tokens, 2, TokenCodeFence, "~~~", 2, 1)
 	assertTokenAt(t, tokens, 1, TokenNewline, "\n", 2, 0)
@@ -201,7 +202,7 @@ func TestEmptyCodeBlock(t *testing.T) {
 
 func TestBacktickCodeBlock(t *testing.T) {
 	input := "```\n#include <stdio.h>\n\nint main() {\n    printf(\"Hello, World!\\n\");\n}\n```"
-	tokens := New(input).Tokenize()
+	tokens := Tokenize(input)
 	assertTokenAt(t, tokens, 0, TokenCodeFence, "```", 1, 1)
 	assertTokenAt(t, tokens, 1, TokenNewline, "\n", 2, 0)
 	assertTokenAt(t, tokens, 2, TokenText, "#include <stdio.h>", 2, 1)
