@@ -14,10 +14,11 @@ const (
 	TokenNewline // Line break
 
 	// Block-level markers (recognized only at the start of line)
-	TokenHeader     // # ## ### etc - stores level in token metadata
-	TokenCodeFence  // ``` or ~~~ at line start
-	TokenBlockquote // > at line start
-	TokenListMarker // - * + for unordered, or N. N) for ordered
+	TokenHeader         // # ## ### etc - stores level in token metadata
+	TokenCodeFence      // ``` or ~~~ at line start
+	TokenHorizontalRule // --- or *** at line start
+	TokenBlockquote     // > at line start
+	TokenListMarker     // - * + for unordered, or N. N) for ordered
 
 	// Inline delimiters (recognized mid-line)
 	TokenBacktick   // ` ```
@@ -55,6 +56,8 @@ func (t TokenType) String() string {
 		return "Header"
 	case TokenCodeFence:
 		return "CodeFence"
+	case TokenHorizontalRule:
+		return "HorizontalRule"
 	case TokenBlockquote:
 		return "Blockquote"
 	case TokenListMarker:

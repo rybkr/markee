@@ -217,3 +217,60 @@ func TestBacktickCodeBlock(t *testing.T) {
 	assertTokenAt(t, tokens, 11, TokenCodeFence, "```", 7, 1)
 	assertTokenAt(t, tokens, 12, TokenEOF, "", 7, 4)
 }
+
+func TestHorizontalRule(t *testing.T) {
+	input := `Hello
+---
+World`
+	tokens := Tokenize(input)
+	assertTokenAt(t, tokens, 0, TokenText, "Hello", 1, 1)
+	assertTokenAt(t, tokens, 1, TokenNewline, "\n", 2, 0)
+	assertTokenAt(t, tokens, 2, TokenHorizontalRule, "---", 2, 1)
+	assertTokenAt(t, tokens, 3, TokenNewline, "\n", 3, 0)
+	assertTokenAt(t, tokens, 4, TokenText, "World", 3, 1)
+	assertTokenAt(t, tokens, 5, TokenEOF, "", 3, 6)
+}
+
+func TestStarHorizontalRule(t *testing.T) {
+	input := `Hello
+***
+World`
+	tokens := Tokenize(input)
+	assertTokenAt(t, tokens, 0, TokenText, "Hello", 1, 1)
+	assertTokenAt(t, tokens, 1, TokenNewline, "\n", 2, 0)
+	assertTokenAt(t, tokens, 2, TokenHorizontalRule, "***", 2, 1)
+	assertTokenAt(t, tokens, 3, TokenNewline, "\n", 3, 0)
+	assertTokenAt(t, tokens, 4, TokenText, "World", 3, 1)
+	assertTokenAt(t, tokens, 5, TokenEOF, "", 3, 6)
+}
+
+func TestListMarker(t *testing.T) {
+	input := "- Item 1"
+	tokens := Tokenize(input)
+	assertTokenAt(t, tokens, 0, TokenListMarker, "-", 1, 1)
+	assertTokenAt(t, tokens, 1, TokenText, "Item 1", 1, 3)
+	assertTokenAt(t, tokens, 2, TokenEOF, "", 1, 9)
+}
+
+func TestMultipleListItems(t *testing.T) {
+	input := `- First
+* Second
++ Third`
+	tokens := Tokenize(input)
+	assertTokenAt(t, tokens, 0, TokenListMarker, "-", 1, 1)
+	assertTokenAt(t, tokens, 1, TokenText, "First", 1, 3)
+	assertTokenAt(t, tokens, 2, TokenNewline, "\n", 2, 0)
+	assertTokenAt(t, tokens, 3, TokenListMarker, "*", 2, 1)
+	assertTokenAt(t, tokens, 4, TokenText, "Second", 2, 3)
+	assertTokenAt(t, tokens, 5, TokenNewline, "\n", 3, 0)
+	assertTokenAt(t, tokens, 6, TokenListMarker, "+", 3, 1)
+	assertTokenAt(t, tokens, 7, TokenText, "Third", 3, 3)
+	assertTokenAt(t, tokens, 8, TokenEOF, "", 3, 8)
+}
+
+func TestListMarkerNoSpace(t *testing.T) {
+	input := "-item"
+	tokens := Tokenize(input)
+	assertTokenAt(t, tokens, 0, TokenText, "-item", 1, 1)
+	assertTokenAt(t, tokens, 1, TokenEOF, "", 1, 6)
+}

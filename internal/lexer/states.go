@@ -115,7 +115,28 @@ func lexCodeBlock(l *Lexer) stateFunc {
 }
 
 func lexLineStartMarker(l *Lexer) stateFunc {
-	return nil
+	if isHorizontalRule(l.peekAhead(3)) {
+		l.advanceAhead(3)
+		l.emit(TokenHorizontalRule)
+		l.advanceUntil(isNewline)
+		l.ignore()
+
+		l.context = CtxInline
+		return lexInline
+	}
+
+	l.advance()
+	if isWhitespace(l.peek()) {
+		l.emit(TokenListMarker)
+		l.advanceWhile(isWhitespace)
+		l.ignore()
+		l.context = CtxInline
+		return lexInline
+	}
+
+	l.abort()
+	l.context = CtxInline
+	return lexInline
 }
 
 func lexStar(l *Lexer) stateFunc {

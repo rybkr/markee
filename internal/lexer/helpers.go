@@ -106,3 +106,7 @@ var isText predicateFunc = func(r rune) bool {
 func isCodeFence(s string) bool {
 	return s == "```" || s == "~~~"
 }
+
+func isHorizontalRule(s string) bool {
+	return s == "---" || s == "***"
+}
