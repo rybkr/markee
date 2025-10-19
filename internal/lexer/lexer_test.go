@@ -274,3 +274,54 @@ func TestListMarkerNoSpace(t *testing.T) {
 	assertTokenAt(t, tokens, 0, TokenText, "-item", 1, 1)
 	assertTokenAt(t, tokens, 1, TokenEOF, "", 1, 6)
 }
+
+func TestEmphasisStar(t *testing.T) {
+	input := "*italic*"
+	tokens := Tokenize(input)
+	assertTokenAt(t, tokens, 0, TokenEmphasis, "*", 1, 1)
+	assertTokenAt(t, tokens, 1, TokenText, "italic", 1, 2)
+	assertTokenAt(t, tokens, 2, TokenEmphasis, "*", 1, 8)
+	assertTokenAt(t, tokens, 3, TokenEOF, "", 1, 9)
+}
+
+func TestEmphasisUnderscore(t *testing.T) {
+	input := "_italic_"
+	tokens := Tokenize(input)
+	assertTokenAt(t, tokens, 0, TokenEmphasis, "_", 1, 1)
+	assertTokenAt(t, tokens, 1, TokenText, "italic", 1, 2)
+	assertTokenAt(t, tokens, 2, TokenEmphasis, "_", 1, 8)
+	assertTokenAt(t, tokens, 3, TokenEOF, "", 1, 9)
+}
+
+func TestStrongStar(t *testing.T) {
+	input := "**bold**"
+	tokens := Tokenize(input)
+	assertTokenAt(t, tokens, 0, TokenStrong, "**", 1, 1)
+	assertTokenAt(t, tokens, 1, TokenText, "bold", 1, 3)
+	assertTokenAt(t, tokens, 2, TokenStrong, "**", 1, 7)
+	assertTokenAt(t, tokens, 3, TokenEOF, "", 1, 9)
+}
+
+func TestStrongUnderscore(t *testing.T) {
+	input := "__bold__"
+	tokens := Tokenize(input)
+	assertTokenAt(t, tokens, 0, TokenStrong, "__", 1, 1)
+	assertTokenAt(t, tokens, 1, TokenText, "bold", 1, 3)
+	assertTokenAt(t, tokens, 2, TokenStrong, "__", 1, 7)
+	assertTokenAt(t, tokens, 3, TokenEOF, "", 1, 9)
+}
+
+func TestMixedEmphasis(t *testing.T) {
+	input := "Some *italic* and **bold** text"
+	tokens := Tokenize(input)
+	assertTokenAt(t, tokens, 0, TokenText, "Some ", 1, 1)
+	assertTokenAt(t, tokens, 1, TokenEmphasis, "*", 1, 6)
+	assertTokenAt(t, tokens, 2, TokenText, "italic", 1, 7)
+	assertTokenAt(t, tokens, 3, TokenEmphasis, "*", 1, 13)
+	assertTokenAt(t, tokens, 4, TokenText, " and ", 1, 14)
+	assertTokenAt(t, tokens, 5, TokenStrong, "**", 1, 19)
+	assertTokenAt(t, tokens, 6, TokenText, "bold", 1, 21)
+	assertTokenAt(t, tokens, 7, TokenStrong, "**", 1, 25)
+	assertTokenAt(t, tokens, 8, TokenText, " text", 1, 27)
+	assertTokenAt(t, tokens, 9, TokenEOF, "", 1, 32)
+}

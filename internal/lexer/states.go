@@ -140,11 +140,33 @@ func lexLineStartMarker(l *Lexer) stateFunc {
 }
 
 func lexStar(l *Lexer) stateFunc {
-	return nil
+    for l.peek() == '*' && l.pos - l.start < 2 {
+        l.advance()
+    }
+
+    switch l.pos - l.start {
+    case 1:
+        l.emit(TokenEmphasis)
+    case 2:
+        l.emit(TokenStrong)
+    }
+
+    return lexInline
 }
 
 func lexUnderscore(l *Lexer) stateFunc {
-	return nil
+	for l.peek() == '_' && l.pos - l.start < 2 {
+        l.advance()
+    }
+
+    switch l.pos - l.start {
+    case 1:
+        l.emit(TokenEmphasis)
+    case 2:
+        l.emit(TokenStrong)
+    }
+
+    return lexInline
 }
 
 func lexBacktick(l *Lexer) stateFunc {

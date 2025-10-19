@@ -21,9 +21,9 @@ const (
 	TokenListMarker     // - * + for unordered, or N. N) for ordered
 
 	// Inline delimiters (recognized mid-line)
-	TokenBacktick   // ` ```
-	TokenStar       // * ** ***
-	TokenUnderscore // _ __ ___
+    TokenBacktick // `
+    TokenEmphasis // * or _
+    TokenStrong   // ** or __
 
 	// Links and images
 	TokenBracketOpen  // [
@@ -64,10 +64,10 @@ func (t TokenType) String() string {
 		return "ListMarker"
 	case TokenBacktick:
 		return "Backtick"
-	case TokenStar:
-		return "Star"
-	case TokenUnderscore:
-		return "Underscore"
+	case TokenEmphasis:
+		return "Emphasis"
+	case TokenStrong:
+		return "Strong"
 	case TokenBracketOpen:
 		return "BracketOpen"
 	case TokenBracketClose:
