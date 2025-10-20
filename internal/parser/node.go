@@ -7,6 +7,9 @@ const (
     NodeDocument NodeType = iota
     NodeParagraph
     NodeHeader
+    NodeText
+    NodeEmphasis
+    NodeStrong
 )
 
 type Node struct {

@@ -5,17 +5,22 @@ import (
 	"fmt"
 	"log"
 	"markee/internal/lexer"
+    "markee/internal/parser"
 	"os"
+    "strings"
 )
 
 func main() {
 	var inputFile string
 	var lexMode bool
+    var parseMode bool
 
 	flag.StringVar(&inputFile, "i", "", "input file path")
 	flag.StringVar(&inputFile, "input", "", "input file path")
 	flag.BoolVar(&lexMode, "l", false, "print lexer tokens")
 	flag.BoolVar(&lexMode, "lex", false, "print lexer tokens")
+    flag.BoolVar(&parseMode, "p", false, "print AST")
+    flag.BoolVar(&parseMode, "parse", false, "print AST")
 	flag.Parse()
 
 	// If no input flag is given, check the first positional argument
@@ -43,4 +48,28 @@ func main() {
 		}
 		os.Exit(0)
 	}
+
+    if parseMode {
+       
+        ast := parser.Parse(string(data))
+        printAST(ast, 0)
+        os.Exit(0)
+    }
+}
+
+func printAST(node *parser.Node, depth int) {
+    indent := strings.Repeat("  ", depth)
+
+    fmt.Printf("%s%s", indent, node.Type.String())
+    if node.Level > 0 {
+        fmt.Printf(" (level %d)", node.Level)
+    }
+    if node.Value != "" {
+        fmt.Printf(" %s", node.Value)
+    }
+    fmt.Printf("\n")
+
+    for _, child := range node.Children {
+        printAST(child, depth+1)
+    }
 }

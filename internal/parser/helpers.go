@@ -4,13 +4,13 @@ import (
     "markee/internal/lexer"
 )
 
-func (p *Parser) advance() {
+func (p *Parser) advance() lexer.Token {
     tok := p.peek()
     p.pos++
-    return p.tokens[p.pos]
+    return tok
 }
 
-func (p *Parser) peek() {
+func (p *Parser) peek() lexer.Token {
     if p.pos < len(p.tokens)-1 {
         return p.tokens[p.pos+1]
     }

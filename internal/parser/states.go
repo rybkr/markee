@@ -4,9 +4,9 @@ import (
     "markee/internal/lexer"
 )
 
-type parseFunc func(*Parser) parseFunc
+type stateFunc func(*Parser) stateFunc
 
-func parseBlock(p *Parser) parseFunc {
+func parseBlock(p *Parser) stateFunc {
     switch p.tokens[p.pos].Type {
     case lexer.TokenEOF:
         return nil
@@ -18,12 +18,12 @@ func parseBlock(p *Parser) parseFunc {
     return parseBlock
 }
 
-func parseHeader(p *Parser) parseFunc {
+func parseHeader(p *Parser) stateFunc {
     tok := p.advance()
     node := &Node{
         Type:     NodeHeader,
         Level:    len(tok.Value),
-        Children: []*Node{}
+        Children: []*Node{},
     }
 
     p.appendChild(node)
@@ -52,9 +52,9 @@ func parseInlineUntil(p *Parser, stops ...lexer.TokenType) {
                 Value: tok.Value,
             })
             p.advance()
-        case lexer.TokenEmphasisDelimiter:
+        case lexer.TokenEmphasis:
             parseEmphasis(p)
-        case lexer.TokenStrongDelimiter:
+        case lexer.TokenStrong:
             parseStrong(p)
         default:
             p.advance()
@@ -71,7 +71,7 @@ func parseEmphasis(p *Parser) {
 	
 	p.appendChild(node)
 	p.push(node)
-	parseInlineUntil(p, lexer.TokenEmphasisDelimiter)
+	parseInlineUntil(p, lexer.TokenEmphasis)
 	p.pop()
 }
 
@@ -84,6 +84,6 @@ func parseStrong(p *Parser) {
 	
 	p.appendChild(node)
 	p.push(node)
-	parseInlineUntil(p, lexer.TokenStrongDelimiter)
+	parseInlineUntil(p, lexer.TokenStrong)
 	p.pop()
 }

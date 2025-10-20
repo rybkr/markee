@@ -16,27 +16,36 @@ const (
 type Parser struct {
     tokens  []lexer.Token
     pos     int
-    context Context
     stack   []*Node
+    state   stateFunc
+    context Context
 }
 
 func New(tokens []lexer.Token) *Parser {
 	return &Parser{
 		tokens:  tokens,
 		pos:     0,
-		context: CtxBlock,
 		stack:   []*Node{},
+        state:   parseBlock,
+		context: CtxBlock,
 	}
 }
 
-func (p *Parser) Parse() *Node {
+func (p *Parser) All() *Node {
     root := &Node{
         Type:     NodeDocument,
         Children: []*Node{},
     }
     p.push(root)
 
-    state := 
+    for p.state != nil {
+        p.state = p.state(p)
+    }
 
-    return doc
+    p.pop()
+    return root
+}
+
+func Parse(input string) *Node {
+    return New(lexer.Tokenize(input)).All()
 }
