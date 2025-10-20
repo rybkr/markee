@@ -19,7 +19,7 @@ func parseBlock(p *Parser) stateFunc {
 }
 
 func parseHeader(p *Parser) stateFunc {
-    tok := p.advance()
+    tok := p.tokens[p.pos]
     node := &Node{
         Type:     NodeHeader,
         Level:    len(tok.Value),

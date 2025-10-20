@@ -6,6 +6,7 @@ import (
 	"log"
 	"markee/internal/lexer"
     "markee/internal/parser"
+    "markee/internal/renderer"
 	"os"
     "strings"
 )
@@ -50,11 +51,14 @@ func main() {
 	}
 
     if parseMode {
-       
         ast := parser.Parse(string(data))
         printAST(ast, 0)
         os.Exit(0)
     }
+
+    doc  := parser.Parse(string(data))
+    html := renderer.RenderHTML(doc)
+    fmt.Println(html)
 }
 
 func printAST(node *parser.Node, depth int) {

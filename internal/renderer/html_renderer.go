@@ -14,16 +14,18 @@ func NewHTMLRenderer() *HTMLRenderer {
 func (r *HTMLRenderer) Render(node *parser.Node) string {
     switch node.Type {
     case parser.NodeDocument:
-        r.renderChildren(node)
+        return r.renderChildren(node)
     case parser.NodeParagraph:
         return "<p>" + r.renderChildren(node) + "</p>\n"
     case parser.NodeHeader:
-        return renderHeader(node)
+        return r.renderHeader(node)
+    default:
+        return node.Value
     }
 }
 
 func (r *HTMLRenderer) renderChildren(node *parser.Node) string {
-    var results strings.Builder
+    var result strings.Builder
     for _, child := range node.Children {
         result.WriteString(r.Render(child))
     }
