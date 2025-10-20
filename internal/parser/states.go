@@ -12,6 +12,10 @@ func parseBlock(p *Parser) stateFunc {
         return nil
     case lexer.TokenHeader:
         return parseHeader
+    case lexer.TokenBlockquote:
+        return parseBlockquote
+    case lexer.TokenCodeFence:
+        return parseCodeBlock
     case lexer.TokenText, lexer.TokenEmphasis, lexer.TokenStrong:
         return parseParagraph
     default:
@@ -21,7 +25,7 @@ func parseBlock(p *Parser) stateFunc {
 }
 
 func parseHeader(p *Parser) stateFunc {
-    tok := p.tokens[p.pos]
+    tok := p.advance()
     node := &Node{
         Type:     NodeHeader,
         Level:    len(tok.Value),
@@ -33,6 +37,49 @@ func parseHeader(p *Parser) stateFunc {
     parseInlineUntil(p, lexer.TokenNewline, lexer.TokenEOF)
     p.pop()
 
+    return parseBlock
+}
+
+func parseBlockquote(p *Parser) stateFunc {
+    p.advance()
+    node := &Node{
+        Type:     NodeBlockquote,
+        Children: []*Node{},
+    }
+
+    p.appendChild(node)
+	p.push(node)
+	parseInlineUntil(p, lexer.TokenNewline, lexer.TokenEOF)
+	p.pop()
+
+    return parseBlock
+}
+
+func parseCodeBlock(p *Parser) stateFunc {
+    p.advance()
+    node := &Node{
+        Type:     NodeCodeBlock,
+        Children: []*Node{},
+    }
+
+    if p.peek().Type == lexer.TokenNewline {
+        p.advance()
+    }
+    
+    var content string
+    for p.peek().Type != lexer.TokenCodeFence && p.peek().Type != lexer.TokenEOF {
+        tok := p.peek()
+        if tok.Type == lexer.TokenText {
+            content += tok.Value
+        } else if tok.Type == lexer.TokenNewline {
+            content += tok.Value
+        }
+        p.advance()
+    }
+    p.advance()
+
+    node.Value = content
+    p.appendChild(node)
     return parseBlock
 }
 
@@ -52,8 +99,7 @@ func parseParagraph(p *Parser) stateFunc {
 
 func parseInlineUntil(p *Parser, stops ...lexer.TokenType) {
     for {
-        tok := p.tokens[p.pos]
-
+        tok := p.peek()
         for _, stop := range stops {
             if tok.Type == stop {
                 p.advance()

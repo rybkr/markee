@@ -7,6 +7,8 @@ const (
     NodeDocument NodeType = iota
     NodeParagraph
     NodeHeader
+    NodeBlockquote
+    NodeCodeBlock
     NodeText
     NodeEmphasis
     NodeStrong

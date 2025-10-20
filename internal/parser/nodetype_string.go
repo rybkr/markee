@@ -11,14 +11,16 @@ func _() {
 	_ = x[NodeDocument-0]
 	_ = x[NodeParagraph-1]
 	_ = x[NodeHeader-2]
-	_ = x[NodeText-3]
-	_ = x[NodeEmphasis-4]
-	_ = x[NodeStrong-5]
+	_ = x[NodeBlockquote-3]
+	_ = x[NodeCodeBlock-4]
+	_ = x[NodeText-5]
+	_ = x[NodeEmphasis-6]
+	_ = x[NodeStrong-7]
 }
 
-const _NodeType_name = "NodeDocumentNodeParagraphNodeHeaderNodeTextNodeEmphasisNodeStrong"
+const _NodeType_name = "NodeDocumentNodeParagraphNodeHeaderNodeBlockquoteNodeCodeBlockNodeTextNodeEmphasisNodeStrong"
 
-var _NodeType_index = [...]uint8{0, 12, 25, 35, 43, 55, 65}
+var _NodeType_index = [...]uint8{0, 12, 25, 35, 49, 62, 70, 82, 92}
 
 func (i NodeType) String() string {
 	idx := int(i) - 0

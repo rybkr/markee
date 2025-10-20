@@ -114,3 +114,44 @@ func TestMultipleLevelHeaders(t *testing.T) {
 	text3 := assertChild(t, h3, 0, NodeText)
 	assertNodeValue(t, text3, "H3")
 }
+
+func TestBlockquote(t *testing.T) {
+	input := "> This is a quote"
+	ast := Parse(input)
+	assertNodeType(t, ast, NodeDocument)
+	assertChildCount(t, ast, 1)
+
+	quote := assertChild(t, ast, 0, NodeBlockquote)
+	assertChildCount(t, quote, 1)
+
+	text := assertChild(t, quote, 0, NodeText)
+	assertNodeValue(t, text, "This is a quote")
+}
+
+func TestMultiLineBlockquote(t *testing.T) {
+	input := `> First line
+> Second line`
+	ast := Parse(input)
+	assertNodeType(t, ast, NodeDocument)
+	assertChildCount(t, ast, 2)
+
+	quote1 := assertChild(t, ast, 0, NodeBlockquote)
+	text1 := assertChild(t, quote1, 0, NodeText)
+	assertNodeValue(t, text1, "First line")
+
+	quote2 := assertChild(t, ast, 1, NodeBlockquote)
+	text2 := assertChild(t, quote2, 0, NodeText)
+	assertNodeValue(t, text2, "Second line")
+}
+
+func TestCodeBlock(t *testing.T) {
+	input := `~~~
+code here
+~~~`
+	ast := Parse(input)
+	assertNodeType(t, ast, NodeDocument)
+	assertChildCount(t, ast, 1)
+
+	code := assertChild(t, ast, 0, NodeCodeBlock)
+	assertNodeValue(t, code, "code here\n")
+}
