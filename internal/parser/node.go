@@ -1,5 +1,6 @@
 package parser
 
+//go:generate stringer -type=NodeType
 type NodeType int
 
 const (
@@ -9,8 +10,8 @@ const (
 )
 
 type Node struct {
-    Type
-    Value
-    Level
+    Type     NodeType
+    Value    string
+    Level    int
     Children []*Node
 }
