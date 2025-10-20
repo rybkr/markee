@@ -170,15 +170,18 @@ func lexUnderscore(l *Lexer) stateFunc {
 }
 
 func lexBacktick(l *Lexer) stateFunc {
-	return nil
+    l.context = CtxInline
+    return lexInline
 }
 
 func lexBracket(l *Lexer) stateFunc {
-	return nil
+    l.context = CtxInline
+    return lexInline
 }
 
 func lexBang(l *Lexer) stateFunc {
-	return nil
+    l.context = CtxInline
+    return lexInline
 }
 
 func lexNewline(l *Lexer) stateFunc {
