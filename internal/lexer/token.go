@@ -1,10 +1,9 @@
 package lexer
 
-// TokenType represents the type of token recognized by the lexer.
+//go:generate stringer -type=TokenType
 type TokenType int
 
 const (
-	// Special tokens
 	TokenEOF TokenType = iota
 	TokenError
 
@@ -33,52 +32,9 @@ const (
 	TokenBang         // !
 )
 
-// Token represents a single lexical unit from the input.
-// Line and Column are 1-indexed for compatible error messages.
 type Token struct {
 	Type   TokenType
-	Value  string // The actual text matched
-	Line   int    // Line number where token starts (1-indexed)
-	Column int    // Column where token starts (1-indexed)
-}
-
-func (t TokenType) String() string {
-	switch t {
-	case TokenEOF:
-		return "EOF"
-	case TokenText:
-		return "Text"
-	case TokenSpace:
-		return "Space"
-	case TokenNewline:
-		return "Newline"
-	case TokenHeader:
-		return "Header"
-	case TokenCodeFence:
-		return "CodeFence"
-	case TokenHorizontalRule:
-		return "HorizontalRule"
-	case TokenBlockquote:
-		return "Blockquote"
-	case TokenListMarker:
-		return "ListMarker"
-	case TokenBacktick:
-		return "Backtick"
-	case TokenEmphasis:
-		return "Emphasis"
-	case TokenStrong:
-		return "Strong"
-	case TokenBracketOpen:
-		return "BracketOpen"
-	case TokenBracketClose:
-		return "BracketClose"
-	case TokenParenOpen:
-		return "ParenOpen"
-	case TokenParenClose:
-		return "ParenClose"
-	case TokenBang:
-		return "Bang"
-	default:
-		return "Error"
-	}
+	Value  string
+	Line   int
+	Column int
 }

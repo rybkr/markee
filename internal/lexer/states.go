@@ -170,16 +170,19 @@ func lexUnderscore(l *Lexer) stateFunc {
 }
 
 func lexBacktick(l *Lexer) stateFunc {
+    l.advance()
     l.context = CtxInline
     return lexInline
 }
 
 func lexBracket(l *Lexer) stateFunc {
+    l.advance()
     l.context = CtxInline
     return lexInline
 }
 
 func lexBang(l *Lexer) stateFunc {
+    l.advance()
     l.context = CtxInline
     return lexInline
 }
