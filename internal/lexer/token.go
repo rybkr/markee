@@ -9,7 +9,6 @@ const (
 
 	// Content tokens - the actual text and spacing
 	TokenText    // Any regular text content
-	TokenSpace   // Horizontal whitespace
 	TokenNewline // Line break
 
 	// Block-level markers (recognized only at the start of line)

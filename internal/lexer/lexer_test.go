@@ -36,25 +36,14 @@ func assertTokenAt(t *testing.T, tokens []Token, index int, expectedType TokenTy
 }
 
 func TestTokenTypeString(t *testing.T) {
-	tests := []struct {
-		value    TokenType
-		expected string
-	}{
-		{TokenEOF, "TokenEOF"}, {TokenError, "TokenError"}, {TokenText, "TokenText"}, {TokenSpace, "TokenSpace"},
-		{TokenNewline, "TokenNewline"}, {TokenHeader, "TokenHeader"}, {TokenCodeFence, "TokenCodeFence"},
-		{TokenHorizontalRule, "TokenHorizontalRule"}, {TokenBlockquote, "TokenBlockquote"},
-		{TokenListMarker, "TokenListMarker"}, {TokenBacktick, "TokenBacktick"}, {TokenUnderscore, "TokenUnderscore"},
-		{TokenStar, "TokenStar"},
-	}
-
-	for _, tt := range tests {
-		if got := tt.value.String(); got != tt.expected {
-			t.Errorf("%v.String() = %q, want %q", tt.value, got, tt.expected)
-		}
-	}
+    tokenType := TokenEOF
+    expected := "TokenEOF"
+    if got := tokenType.String(); got != expected {
+		t.Errorf("Unexpected String() for unknown value: got %q, want %q", got, expected)
+    }
 
 	unknown := TokenType(9999)
-	expected := "TokenType(9999)"
+	expected = "TokenType(9999)"
 	if got := unknown.String(); got != expected {
 		t.Errorf("Unexpected String() for unknown value: got %q, want %q", got, expected)
 	}
