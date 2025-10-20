@@ -39,7 +39,7 @@ func main() {
 
 	if lexMode {
 		for _, tok := range lexer.Tokenize(string(data)) {
-			fmt.Printf("%s:%d:%d %s %q\n", inputFile, tok.Line, tok.Column, tok.Type.String(), tok.Value)
+			fmt.Printf("%s:%d:%d %d %q\n", inputFile, tok.Line, tok.Column, tok.Type, tok.Value)
 		}
 		os.Exit(0)
 	}
