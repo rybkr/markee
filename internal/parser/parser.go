@@ -1,24 +1,24 @@
 package parser
 
 import (
-    "markee/internal/lexer"
+	"markee/internal/lexer"
 )
 
 type Context int
 
 const (
-    CtxBlock Context = iota
-    CtxInline
-    CtxCodeBlock
-    CtxList
+	CtxBlock Context = iota
+	CtxInline
+	CtxCodeBlock
+	CtxList
 )
 
 type Parser struct {
-    tokens  []lexer.Token
-    pos     int
-    stack   []*Node
-    state   stateFunc
-    context Context
+	tokens  []lexer.Token
+	pos     int
+	stack   []*Node
+	state   stateFunc
+	context Context
 }
 
 func New(tokens []lexer.Token) *Parser {
@@ -26,26 +26,26 @@ func New(tokens []lexer.Token) *Parser {
 		tokens:  tokens,
 		pos:     0,
 		stack:   []*Node{},
-        state:   parseBlock,
+		state:   parseBlock,
 		context: CtxBlock,
 	}
 }
 
 func (p *Parser) All() *Node {
-    root := &Node{
-        Type:     NodeDocument,
-        Children: []*Node{},
-    }
-    p.push(root)
+	root := &Node{
+		Type:     NodeDocument,
+		Children: []*Node{},
+	}
+	p.push(root)
 
-    for p.state != nil {
-        p.state = p.state(p)
-    }
+	for p.state != nil {
+		p.state = p.state(p)
+	}
 
-    p.pop()
-    return root
+	p.pop()
+	return root
 }
 
 func Parse(input string) *Node {
-    return New(lexer.Tokenize(input)).All()
+	return New(lexer.Tokenize(input)).All()
 }

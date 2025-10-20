@@ -4,19 +4,19 @@ package parser
 type NodeType int
 
 const (
-    NodeDocument NodeType = iota
-    NodeParagraph
-    NodeHeader
-    NodeBlockquote
-    NodeCodeBlock
-    NodeText
-    NodeEmphasis
-    NodeStrong
+	NodeDocument NodeType = iota
+	NodeParagraph
+	NodeHeader
+	NodeBlockquote
+	NodeCodeBlock
+	NodeText
+	NodeEmphasis
+	NodeStrong
 )
 
 type Node struct {
-    Type     NodeType
-    Value    string
-    Level    int
-    Children []*Node
+	Type     NodeType
+	Value    string
+	Level    int
+	Children []*Node
 }

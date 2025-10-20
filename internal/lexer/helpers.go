@@ -91,12 +91,11 @@ var isNewline predicateFunc = func(r rune) bool {
 }
 
 var isEOF predicateFunc = func(r rune) bool {
-    return r == 0
+	return r == 0
 }
 
 var isInlineDelimiter predicateFunc = func(r rune) bool {
-	return r == '*' || r == '_' || r == '`' || r == '[' ||
-		r == ']' || r == '(' || r == ')' || r == '!'
+	return r == '*' || r == '_' || r == '`'
 }
 
 var isBenign predicateFunc = func(r rune) bool {

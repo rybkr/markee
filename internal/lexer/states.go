@@ -105,8 +105,8 @@ func lexCodeBlock(l *Lexer) stateFunc {
 	switch l.peek() {
 	case '\n':
 		return lexNewline
-    default:
-        return lexEOF
+	default:
+		return lexEOF
 	}
 }
 
@@ -140,13 +140,7 @@ func lexStar(l *Lexer) stateFunc {
 		l.advance()
 	}
 
-	switch l.pos - l.start {
-	case 1:
-		l.emit(TokenEmphasis)
-	case 2:
-		l.emit(TokenStrong)
-	}
-
+	l.emit(TokenStar)
 	return lexInline
 }
 
@@ -155,31 +149,23 @@ func lexUnderscore(l *Lexer) stateFunc {
 		l.advance()
 	}
 
-	switch l.pos - l.start {
-	case 1:
-		l.emit(TokenEmphasis)
-	case 2:
-		l.emit(TokenStrong)
-	}
-
+	l.emit(TokenUnderscore)
 	return lexInline
 }
 
 func lexBacktick(l *Lexer) stateFunc {
 	l.advance()
-	l.context = CtxInline
-	return lexInline
-}
+	l.emit(TokenBacktick)
 
-func lexBracket(l *Lexer) stateFunc {
+	for r := l.peek(); r != '`'; r = l.peek() {
+		l.advance()
+	}
+	if l.pos > l.start {
+		l.emit(TokenText)
+	}
 	l.advance()
-	l.context = CtxInline
-	return lexInline
-}
+	l.emit(TokenBacktick)
 
-func lexBang(l *Lexer) stateFunc {
-	l.advance()
-	l.context = CtxInline
 	return lexInline
 }
 
@@ -207,10 +193,6 @@ func dispatchInlineDelimiter(r rune) stateFunc {
 		return lexUnderscore
 	case '`':
 		return lexBacktick
-	case '[', ']', '(', ')':
-		return lexBracket
-	case '!':
-		return lexBang
 	default:
 		return lexInline
 	}

@@ -20,16 +20,9 @@ const (
 	TokenListMarker     // - * + for unordered, or N. N) for ordered
 
 	// Inline delimiters (recognized mid-line)
-	TokenBacktick // `
-	TokenEmphasis // * or _
-	TokenStrong   // ** or __
-
-	// Links and images
-	TokenBracketOpen  // [
-	TokenBracketClose // ]
-	TokenParenOpen    // (
-	TokenParenClose   // )
-	TokenBang         // !
+	TokenBacktick   // `
+	TokenStar       // * or **
+	TokenUnderscore // _ or __
 )
 
 type Token struct {

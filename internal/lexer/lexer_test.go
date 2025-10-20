@@ -43,9 +43,8 @@ func TestTokenTypeString(t *testing.T) {
 		{TokenEOF, "TokenEOF"}, {TokenError, "TokenError"}, {TokenText, "TokenText"}, {TokenSpace, "TokenSpace"},
 		{TokenNewline, "TokenNewline"}, {TokenHeader, "TokenHeader"}, {TokenCodeFence, "TokenCodeFence"},
 		{TokenHorizontalRule, "TokenHorizontalRule"}, {TokenBlockquote, "TokenBlockquote"},
-		{TokenListMarker, "TokenListMarker"}, {TokenBacktick, "TokenBacktick"}, {TokenEmphasis, "TokenEmphasis"},
-		{TokenStrong, "TokenStrong"}, {TokenBracketOpen, "TokenBracketOpen"}, {TokenBracketClose, "TokenBracketClose"},
-		{TokenParenOpen, "TokenParenOpen"}, {TokenParenClose, "TokenParenClose"}, {TokenBang, "TokenBang"},
+		{TokenListMarker, "TokenListMarker"}, {TokenBacktick, "TokenBacktick"}, {TokenUnderscore, "TokenUnderscore"},
+		{TokenStar, "TokenStar"},
 	}
 
 	for _, tt := range tests {
@@ -62,31 +61,37 @@ func TestTokenTypeString(t *testing.T) {
 }
 
 func TestAdvanceTooFar(t *testing.T) {
-    input := "markee"
-    l := New(input)
-    l.advanceUntil(isEOF)
+	input := "markee"
+	l := New(input)
+	l.advanceUntil(isEOF)
 
-    if r := l.advance(); r != 0 {
-        t.Errorf("Expected rune %c, found %c", 0, r)
-    }
-    if r := l.advance(); r != 0 {
-        t.Errorf("Expected rune %c, found %c", 0, r)
-    }
+	if r := l.advance(); r != 0 {
+		t.Errorf("Expected rune %c, found %c", 0, r)
+	}
+	if r := l.advance(); r != 0 {
+		t.Errorf("Expected rune %c, found %c", 0, r)
+	}
 }
 
 func TestPeekAheadTooFar(t *testing.T) {
-    input := "markee"
-    l := New(input)
-    
-    if s := l.peekAhead(5); s != "marke" {
-        t.Errorf("Expected string %s, found %s", "marke", s)
-    }
-    if s := l.peekAhead(6); s != "markee" {
-        t.Errorf("Expected string %s, found %s", "markee", s)
-    }
-    if s := l.peekAhead(7); s != "markee" {
-        t.Errorf("Expected string %s, found %s", "markee", s)
-    }
+	input := "markee"
+	l := New(input)
+
+	if s := l.peekAhead(5); s != "marke" {
+		t.Errorf("Expected string %s, found %s", "marke", s)
+	}
+	if s := l.peekAhead(6); s != "markee" {
+		t.Errorf("Expected string %s, found %s", "markee", s)
+	}
+	if s := l.peekAhead(7); s != "markee" {
+		t.Errorf("Expected string %s, found %s", "markee", s)
+	}
+}
+
+func TestDispatchInvalidDelimiter(t *testing.T) {
+	if dispatchInlineDelimiter('a') == nil {
+		t.Errorf("Unexpected nil result from dispatch.")
+	}
 }
 
 func TestEOF(t *testing.T) {
@@ -98,13 +103,13 @@ func TestEOF(t *testing.T) {
 func TestEOFAgain(t *testing.T) {
 	input := ""
 	l := New(input)
-    tokens := l.All()
+	tokens := l.All()
 	assertTokenAt(t, tokens, 0, TokenEOF, "", 1, 1)
-    
-    tok := l.Next()
-    assertTokenType(t, tok, TokenEOF)
-    tok = l.Next()
-    assertTokenType(t, tok, TokenEOF)
+
+	tok := l.Next()
+	assertTokenType(t, tok, TokenEOF)
+	tok = l.Next()
+	assertTokenType(t, tok, TokenEOF)
 }
 
 func TestNewline(t *testing.T) {
@@ -285,13 +290,13 @@ func TestBacktickCodeBlock(t *testing.T) {
 }
 
 func TestIncompleteCodeBlock(t *testing.T) {
-    input := `~~~
+	input := `~~~
 code`
-    tokens := Tokenize(input)
-    assertTokenAt(t, tokens, 0, TokenCodeFence, "~~~", 1, 1)
-    assertTokenAt(t, tokens, 1, TokenNewline, "\n", 2, 0)
-    assertTokenAt(t, tokens, 2, TokenText, "code", 2, 1)
-    assertTokenAt(t, tokens, 3, TokenEOF, "", 2, 5)
+	tokens := Tokenize(input)
+	assertTokenAt(t, tokens, 0, TokenCodeFence, "~~~", 1, 1)
+	assertTokenAt(t, tokens, 1, TokenNewline, "\n", 2, 0)
+	assertTokenAt(t, tokens, 2, TokenText, "code", 2, 1)
+	assertTokenAt(t, tokens, 3, TokenEOF, "", 2, 5)
 }
 
 func TestHorizontalRule(t *testing.T) {
@@ -354,36 +359,36 @@ func TestListMarkerNoSpace(t *testing.T) {
 func TestEmphasisStar(t *testing.T) {
 	input := "*italic*"
 	tokens := Tokenize(input)
-	assertTokenAt(t, tokens, 0, TokenEmphasis, "*", 1, 1)
+	assertTokenAt(t, tokens, 0, TokenStar, "*", 1, 1)
 	assertTokenAt(t, tokens, 1, TokenText, "italic", 1, 2)
-	assertTokenAt(t, tokens, 2, TokenEmphasis, "*", 1, 8)
+	assertTokenAt(t, tokens, 2, TokenStar, "*", 1, 8)
 	assertTokenAt(t, tokens, 3, TokenEOF, "", 1, 9)
 }
 
 func TestEmphasisUnderscore(t *testing.T) {
 	input := "_italic_"
 	tokens := Tokenize(input)
-	assertTokenAt(t, tokens, 0, TokenEmphasis, "_", 1, 1)
+	assertTokenAt(t, tokens, 0, TokenUnderscore, "_", 1, 1)
 	assertTokenAt(t, tokens, 1, TokenText, "italic", 1, 2)
-	assertTokenAt(t, tokens, 2, TokenEmphasis, "_", 1, 8)
+	assertTokenAt(t, tokens, 2, TokenUnderscore, "_", 1, 8)
 	assertTokenAt(t, tokens, 3, TokenEOF, "", 1, 9)
 }
 
 func TestStrongStar(t *testing.T) {
 	input := "**bold**"
 	tokens := Tokenize(input)
-	assertTokenAt(t, tokens, 0, TokenStrong, "**", 1, 1)
+	assertTokenAt(t, tokens, 0, TokenStar, "**", 1, 1)
 	assertTokenAt(t, tokens, 1, TokenText, "bold", 1, 3)
-	assertTokenAt(t, tokens, 2, TokenStrong, "**", 1, 7)
+	assertTokenAt(t, tokens, 2, TokenStar, "**", 1, 7)
 	assertTokenAt(t, tokens, 3, TokenEOF, "", 1, 9)
 }
 
 func TestStrongUnderscore(t *testing.T) {
 	input := "__bold__"
 	tokens := Tokenize(input)
-	assertTokenAt(t, tokens, 0, TokenStrong, "__", 1, 1)
+	assertTokenAt(t, tokens, 0, TokenUnderscore, "__", 1, 1)
 	assertTokenAt(t, tokens, 1, TokenText, "bold", 1, 3)
-	assertTokenAt(t, tokens, 2, TokenStrong, "__", 1, 7)
+	assertTokenAt(t, tokens, 2, TokenUnderscore, "__", 1, 7)
 	assertTokenAt(t, tokens, 3, TokenEOF, "", 1, 9)
 }
 
@@ -391,13 +396,24 @@ func TestMixedEmphasis(t *testing.T) {
 	input := "Some *italic* and **bold** text"
 	tokens := Tokenize(input)
 	assertTokenAt(t, tokens, 0, TokenText, "Some ", 1, 1)
-	assertTokenAt(t, tokens, 1, TokenEmphasis, "*", 1, 6)
+	assertTokenAt(t, tokens, 1, TokenStar, "*", 1, 6)
 	assertTokenAt(t, tokens, 2, TokenText, "italic", 1, 7)
-	assertTokenAt(t, tokens, 3, TokenEmphasis, "*", 1, 13)
+	assertTokenAt(t, tokens, 3, TokenStar, "*", 1, 13)
 	assertTokenAt(t, tokens, 4, TokenText, " and ", 1, 14)
-	assertTokenAt(t, tokens, 5, TokenStrong, "**", 1, 19)
+	assertTokenAt(t, tokens, 5, TokenStar, "**", 1, 19)
 	assertTokenAt(t, tokens, 6, TokenText, "bold", 1, 21)
-	assertTokenAt(t, tokens, 7, TokenStrong, "**", 1, 25)
+	assertTokenAt(t, tokens, 7, TokenStar, "**", 1, 25)
 	assertTokenAt(t, tokens, 8, TokenText, " text", 1, 27)
 	assertTokenAt(t, tokens, 9, TokenEOF, "", 1, 32)
+}
+
+func TestBacktick(t *testing.T) {
+	input := "This is `code`."
+	tokens := Tokenize(input)
+	assertTokenAt(t, tokens, 0, TokenText, "This is ", 1, 1)
+	assertTokenAt(t, tokens, 1, TokenBacktick, "`", 1, 9)
+	assertTokenAt(t, tokens, 2, TokenText, "code", 1, 10)
+	assertTokenAt(t, tokens, 3, TokenBacktick, "`", 1, 14)
+	assertTokenAt(t, tokens, 4, TokenText, ".", 1, 15)
+	assertTokenAt(t, tokens, 5, TokenEOF, "", 1, 16)
 }
