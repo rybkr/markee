@@ -20,9 +20,9 @@ const (
 	TokenListMarker     // - * + for unordered, or N. N) for ordered
 
 	// Inline delimiters (recognized mid-line)
-    TokenBacktick // `
-    TokenEmphasis // * or _
-    TokenStrong   // ** or __
+	TokenBacktick // `
+	TokenEmphasis // * or _
+	TokenStrong   // ** or __
 
 	// Links and images
 	TokenBracketOpen  // [

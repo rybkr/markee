@@ -59,3 +59,58 @@ func TestSimpleText(t *testing.T) {
 	text := assertChild(t, para, 0, NodeText)
 	assertNodeValue(t, text, "Hello world")
 }
+
+func TestMultipleParagraphs(t *testing.T) {
+	input := "First paragraph\n\nSecond paragraph"
+	ast := Parse(input)
+	assertNodeType(t, ast, NodeDocument)
+	assertChildCount(t, ast, 2)
+
+	para1 := assertChild(t, ast, 0, NodeParagraph)
+	assertChildCount(t, para1, 1)
+	text1 := assertChild(t, para1, 0, NodeText)
+	assertNodeValue(t, text1, "First paragraph")
+
+	para2 := assertChild(t, ast, 1, NodeParagraph)
+	assertChildCount(t, para2, 1)
+	text2 := assertChild(t, para2, 0, NodeText)
+	assertNodeValue(t, text2, "Second paragraph")
+}
+
+func TestHeader(t *testing.T) {
+	input := "# Heading 1"
+	ast := Parse(input)
+	assertNodeType(t, ast, NodeDocument)
+	assertChildCount(t, ast, 1)
+
+	header := assertChild(t, ast, 0, NodeHeader)
+	assertNodeLevel(t, header, 1)
+	assertChildCount(t, header, 1)
+
+	text := assertChild(t, header, 0, NodeText)
+	assertNodeValue(t, text, "Heading 1")
+}
+
+func TestMultipleLevelHeaders(t *testing.T) {
+	input := `# H1
+## H2
+### H3`
+	ast := Parse(input)
+	assertNodeType(t, ast, NodeDocument)
+	assertChildCount(t, ast, 3)
+
+	h1 := assertChild(t, ast, 0, NodeHeader)
+	assertNodeLevel(t, h1, 1)
+	text1 := assertChild(t, h1, 0, NodeText)
+	assertNodeValue(t, text1, "H1")
+
+	h2 := assertChild(t, ast, 1, NodeHeader)
+	assertNodeLevel(t, h2, 2)
+	text2 := assertChild(t, h2, 0, NodeText)
+	assertNodeValue(t, text2, "H2")
+
+	h3 := assertChild(t, ast, 2, NodeHeader)
+	assertNodeLevel(t, h3, 3)
+	text3 := assertChild(t, h3, 0, NodeText)
+	assertNodeValue(t, text3, "H3")
+}

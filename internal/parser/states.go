@@ -7,15 +7,17 @@ import (
 type stateFunc func(*Parser) stateFunc
 
 func parseBlock(p *Parser) stateFunc {
-    switch p.tokens[p.pos].Type {
+    switch p.peek().Type {
     case lexer.TokenEOF:
         return nil
     case lexer.TokenHeader:
         return parseHeader
+    case lexer.TokenText, lexer.TokenEmphasis, lexer.TokenStrong:
+        return parseParagraph
+    default:
+        p.advance()
+        return parseBlock
     }
-
-    p.advance()
-    return parseBlock
 }
 
 func parseHeader(p *Parser) stateFunc {
@@ -23,6 +25,20 @@ func parseHeader(p *Parser) stateFunc {
     node := &Node{
         Type:     NodeHeader,
         Level:    len(tok.Value),
+        Children: []*Node{},
+    }
+
+    p.appendChild(node)
+    p.push(node)
+    parseInlineUntil(p, lexer.TokenNewline, lexer.TokenEOF)
+    p.pop()
+
+    return parseBlock
+}
+
+func parseParagraph(p *Parser) stateFunc {
+    node := &Node{
+        Type:     NodeParagraph,
         Children: []*Node{},
     }
 

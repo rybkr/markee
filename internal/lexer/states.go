@@ -140,51 +140,51 @@ func lexLineStartMarker(l *Lexer) stateFunc {
 }
 
 func lexStar(l *Lexer) stateFunc {
-    for l.peek() == '*' && l.pos - l.start < 2 {
-        l.advance()
-    }
+	for l.peek() == '*' && l.pos-l.start < 2 {
+		l.advance()
+	}
 
-    switch l.pos - l.start {
-    case 1:
-        l.emit(TokenEmphasis)
-    case 2:
-        l.emit(TokenStrong)
-    }
+	switch l.pos - l.start {
+	case 1:
+		l.emit(TokenEmphasis)
+	case 2:
+		l.emit(TokenStrong)
+	}
 
-    return lexInline
+	return lexInline
 }
 
 func lexUnderscore(l *Lexer) stateFunc {
-	for l.peek() == '_' && l.pos - l.start < 2 {
-        l.advance()
-    }
+	for l.peek() == '_' && l.pos-l.start < 2 {
+		l.advance()
+	}
 
-    switch l.pos - l.start {
-    case 1:
-        l.emit(TokenEmphasis)
-    case 2:
-        l.emit(TokenStrong)
-    }
+	switch l.pos - l.start {
+	case 1:
+		l.emit(TokenEmphasis)
+	case 2:
+		l.emit(TokenStrong)
+	}
 
-    return lexInline
+	return lexInline
 }
 
 func lexBacktick(l *Lexer) stateFunc {
-    l.advance()
-    l.context = CtxInline
-    return lexInline
+	l.advance()
+	l.context = CtxInline
+	return lexInline
 }
 
 func lexBracket(l *Lexer) stateFunc {
-    l.advance()
-    l.context = CtxInline
-    return lexInline
+	l.advance()
+	l.context = CtxInline
+	return lexInline
 }
 
 func lexBang(l *Lexer) stateFunc {
-    l.advance()
-    l.context = CtxInline
-    return lexInline
+	l.advance()
+	l.context = CtxInline
+	return lexInline
 }
 
 func lexNewline(l *Lexer) stateFunc {

@@ -6,15 +6,19 @@ import (
 
 func (p *Parser) advance() lexer.Token {
     tok := p.peek()
+    if tok.Type == lexer.TokenEOF {
+        return tok
+    }
+
     p.pos++
     return tok
 }
 
 func (p *Parser) peek() lexer.Token {
-    if p.pos < len(p.tokens)-1 {
-        return p.tokens[p.pos+1]
+    if p.pos >= len(p.tokens) {
+        return lexer.Token{Type: lexer.TokenEOF}
     }
-    return lexer.Token{Type: lexer.TokenEOF}
+    return p.tokens[p.pos]
 }
 
 func (p *Parser) push(node *Node) {
