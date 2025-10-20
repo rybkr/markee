@@ -19,6 +19,10 @@ func (r *HTMLRenderer) Render(node *parser.Node) string {
         return "<p>" + r.renderChildren(node) + "</p>\n"
     case parser.NodeHeader:
         return r.renderHeader(node)
+    case parser.NodeBlockquote:
+        return "<blockquote>" + r.renderChildren(node) + "</blockquote>\n"
+    case parser.NodeCodeBlock:
+        return "<code>" + node.Value + "</code>\n"
     default:
         return node.Value
     }

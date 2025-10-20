@@ -133,7 +133,7 @@ func parseEmphasis(p *Parser) {
 	
 	p.appendChild(node)
 	p.push(node)
-	parseInlineUntil(p, lexer.TokenEmphasis)
+	parseInlineUntil(p, lexer.TokenEmphasis, lexer.TokenEOF)
 	p.pop()
 }
 
