@@ -1,79 +1,169 @@
 package main
 
 import (
-	"flag"
-	"fmt"
-	"log"
+    "fmt"
+	"github.com/spf13/cobra"
 	"markee/internal/lexer"
-    "markee/internal/parser"
-    "markee/internal/renderer"
+	"markee/internal/parser"
+	"markee/internal/renderer"
 	"os"
-    "strings"
+	"path/filepath"
+	"strings"
 )
 
+var (
+    outputFile string
+    lexMode    bool
+    parseMode  bool
+    renderMode bool
+)
+
+var rootCmd = &cobra.Command{
+    Use:   "markee [input]",
+    Short: "A markdown processor",
+    Long:  `Markee is a markdown processor that can lex, parse, and render markdown files.
+
+By default, markee renders markdown to HTML and prints to stdout.
+You can specify an output file to write the result instead.`,
+    Args:  cobra.ExactArgs(1),
+    RunE:  run,
+    Example: `  # Render to HTML (stdout)
+  markee input.md
+
+  # Render to HTML file
+  markee input.md -o output.html
+
+  # Show lexer tokens
+  markee input.md --lex
+
+  # Show AST
+  markee input.md --parse`,
+}
+
+func init() {
+    rootCmd.Flags().StringVarP(&outputFile, "output", "o", "", "output file path")
+    rootCmd.Flags().BoolVarP(&lexMode, "lex", "l", false, "print lexer tokens")
+    rootCmd.Flags().BoolVarP(&parseMode, "parse", "p", false, "print AST")
+    rootCmd.Flags().BoolVar(&renderMode, "render", false, "render to output format (default)")
+}
+
 func main() {
-	var inputFile string
-	var lexMode bool
-    var parseMode bool
-
-	flag.StringVar(&inputFile, "i", "", "input file path")
-	flag.StringVar(&inputFile, "input", "", "input file path")
-	flag.BoolVar(&lexMode, "l", false, "print lexer tokens")
-	flag.BoolVar(&lexMode, "lex", false, "print lexer tokens")
-    flag.BoolVar(&parseMode, "p", false, "print AST")
-    flag.BoolVar(&parseMode, "parse", false, "print AST")
-	flag.Parse()
-
-	// If no input flag is given, check the first positional argument
-	if inputFile == "" && flag.NArg() > 0 {
-		inputFile = flag.Arg(0)
+	if err := rootCmd.Execute(); err != nil {
+		os.Exit(1)
 	}
+}
 
-	// Early exit if no input file is given
-	if inputFile == "" {
-		log.Fatal("no input file provided")
-	}
+func run(cmd *cobra.Command, args []string) error {
+	inputFile := args[0]
 
 	data, err := os.ReadFile(inputFile)
 	if err != nil {
 		if os.IsNotExist(err) {
-			log.Fatalf("file %q does not exist", inputFile)
-		} else {
-			log.Fatalf("error checking file %q: %v", inputFile, err)
+			return fmt.Errorf("file %q does not exist", inputFile)
 		}
+		return fmt.Errorf("error reading file %q: %w", inputFile, err)
 	}
 
+	input := string(data)
+
+	modeCount := 0
 	if lexMode {
-		for _, tok := range lexer.Tokenize(string(data)) {
-			fmt.Printf("%s:%d:%d %d %q\n", inputFile, tok.Line, tok.Column, tok.Type, tok.Value)
-		}
-		os.Exit(0)
+		modeCount++
+	}
+	if parseMode {
+		modeCount++
+	}
+	if renderMode {
+		modeCount++
+	}
+	if modeCount > 1 {
+		return fmt.Errorf("cannot specify multiple modes (--lex, --parse, --render)")
 	}
 
-    if parseMode {
-        ast := parser.Parse(string(data))
-        printAST(ast, 0)
-        os.Exit(0)
-    }
+	output := os.Stdout
+	if outputFile != "" {
+		f, err := os.Create(outputFile)
+		if err != nil {
+			return fmt.Errorf("error creating output file %q: %w", outputFile, err)
+		}
+		defer f.Close()
+		output = f
+	}
 
-    doc  := parser.Parse(string(data))
-    html := renderer.RenderHTML(doc)
-    fmt.Println(html)
+	switch {
+	case lexMode:
+		return runLexMode(input, inputFile, output)
+	case parseMode:
+		return runParseMode(input, output)
+	default:
+		return runRenderMode(input, outputFile, output)
+	}
 }
 
-func printAST(node *parser.Node, depth int) {
-    indent := strings.Repeat("  ", depth)
+func runLexMode(input, inputFile string, output *os.File) error {
+	tokens := lexer.Tokenize(input)
+	for _, tok := range tokens {
+		fmt.Fprintf(output, "%s:%d:%d %d %q\n", 
+			inputFile, tok.Line, tok.Column, tok.Type, tok.Value)
+	}
+	return nil
+}
 
-    fmt.Printf("%s%s", indent, node.Type.String())
-    if node.Level > 0 {
-        fmt.Printf(" (level %d)", node.Level)
-    }
-    if node.Value != "" {
-        fmt.Printf(" %s", node.Value)
-    }
-    fmt.Printf("\n")
+func runParseMode(input string, output *os.File) error {
+	ast := parser.Parse(input)
+	printAST(ast, 0, output)
+	return nil
+}
 
-    for _, child := range node.Children {
-        printAST(child, depth+1)
-    }
+func runRenderMode(input, outputFile string, output *os.File) error {
+	ast := parser.Parse(input)
+
+	format := "html"
+	if outputFile != "" {
+		ext := strings.ToLower(filepath.Ext(outputFile))
+		switch ext {
+		case ".html", ".htm":
+			format = "html"
+		case ".txt", ".text":
+			format = "text"
+		case ".md", ".markdown":
+			format = "markdown"
+		default:
+			return fmt.Errorf("unsupported output format: %s (supported: .html, .txt)", ext)
+		}
+	}
+
+	var result string
+	switch format {
+	case "html":
+		result = renderer.RenderHTML(ast)
+	default:
+		return fmt.Errorf("unknown format: %s", format)
+	}
+
+	fmt.Fprint(output, result)
+	return nil
+}
+
+func printAST(node *parser.Node, depth int, output *os.File) {
+	indent := strings.Repeat("  ", depth)
+	fmt.Fprintf(output, "%s%s", indent, node.Type.String())
+	
+	if node.Level > 0 {
+		fmt.Fprintf(output, " (level %d)", node.Level)
+	}
+	
+	if node.Value != "" {
+		val := node.Value
+		if len(val) > 50 {
+			val = val[:47] + "..."
+		}
+		fmt.Fprintf(output, " %q", val)
+	}
+	
+	fmt.Fprintln(output)
+	
+	for _, child := range node.Children {
+		printAST(child, depth+1, output)
+	}
 }
