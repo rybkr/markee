@@ -33,17 +33,6 @@ func New(input string) *Lexer {
 }
 
 func (l *Lexer) Next() Token {
-	if len(l.tokens) > 0 {
-		tok := l.tokens[0]
-		l.tokens = l.tokens[1:]
-		return tok
-	}
-
-	// If we've reach EOF, keep returning EOF
-	if l.state == nil {
-		return Token{Type: TokenEOF}
-	}
-
 	for len(l.tokens) == 0 && l.state != nil {
 		l.state = l.state(l)
 	}

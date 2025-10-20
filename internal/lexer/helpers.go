@@ -90,6 +90,10 @@ var isNewline predicateFunc = func(r rune) bool {
 	return r == '\n'
 }
 
+var isEOF predicateFunc = func(r rune) bool {
+    return r == 0
+}
+
 var isInlineDelimiter predicateFunc = func(r rune) bool {
 	return r == '*' || r == '_' || r == '`' || r == '[' ||
 		r == ']' || r == '(' || r == ')' || r == '!'

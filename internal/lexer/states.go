@@ -103,15 +103,11 @@ func lexCodeBlock(l *Lexer) stateFunc {
 	}
 
 	switch l.peek() {
-	case 0:
-		return lexEOF
 	case '\n':
 		return lexNewline
+    default:
+        return lexEOF
 	}
-
-	// Execution should never reach here
-	l.context = CtxInline
-	return lexInline
 }
 
 func lexLineStartMarker(l *Lexer) stateFunc {

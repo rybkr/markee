@@ -61,10 +61,50 @@ func TestTokenTypeString(t *testing.T) {
 	}
 }
 
+func TestAdvanceTooFar(t *testing.T) {
+    input := "markee"
+    l := New(input)
+    l.advanceUntil(isEOF)
+
+    if r := l.advance(); r != 0 {
+        t.Errorf("Expected rune %c, found %c", 0, r)
+    }
+    if r := l.advance(); r != 0 {
+        t.Errorf("Expected rune %c, found %c", 0, r)
+    }
+}
+
+func TestPeekAheadTooFar(t *testing.T) {
+    input := "markee"
+    l := New(input)
+    
+    if s := l.peekAhead(5); s != "marke" {
+        t.Errorf("Expected string %s, found %s", "marke", s)
+    }
+    if s := l.peekAhead(6); s != "markee" {
+        t.Errorf("Expected string %s, found %s", "markee", s)
+    }
+    if s := l.peekAhead(7); s != "markee" {
+        t.Errorf("Expected string %s, found %s", "markee", s)
+    }
+}
+
 func TestEOF(t *testing.T) {
 	input := ""
 	tokens := Tokenize(input)
 	assertTokenAt(t, tokens, 0, TokenEOF, "", 1, 1)
+}
+
+func TestEOFAgain(t *testing.T) {
+	input := ""
+	l := New(input)
+    tokens := l.All()
+	assertTokenAt(t, tokens, 0, TokenEOF, "", 1, 1)
+    
+    tok := l.Next()
+    assertTokenType(t, tok, TokenEOF)
+    tok = l.Next()
+    assertTokenType(t, tok, TokenEOF)
 }
 
 func TestNewline(t *testing.T) {
@@ -242,6 +282,16 @@ func TestBacktickCodeBlock(t *testing.T) {
 	assertTokenAt(t, tokens, 10, TokenNewline, "\n", 7, 0)
 	assertTokenAt(t, tokens, 11, TokenCodeFence, "```", 7, 1)
 	assertTokenAt(t, tokens, 12, TokenEOF, "", 7, 4)
+}
+
+func TestIncompleteCodeBlock(t *testing.T) {
+    input := `~~~
+code`
+    tokens := Tokenize(input)
+    assertTokenAt(t, tokens, 0, TokenCodeFence, "~~~", 1, 1)
+    assertTokenAt(t, tokens, 1, TokenNewline, "\n", 2, 0)
+    assertTokenAt(t, tokens, 2, TokenText, "code", 2, 1)
+    assertTokenAt(t, tokens, 3, TokenEOF, "", 2, 5)
 }
 
 func TestHorizontalRule(t *testing.T) {
