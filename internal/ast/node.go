@@ -1,4 +1,4 @@
-package parser
+package ast
 
 //go:generate stringer -type=NodeType
 type NodeType int
@@ -28,7 +28,7 @@ type Node struct {
 	Children []*Node
 }
 
-func NewNode(type NodeType) *Node {
+func New(type NodeType) *Node {
     return &Node{
         Type:     type,
         Children: []*Node{},
