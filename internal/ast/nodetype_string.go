@@ -10,7 +10,7 @@ func _() {
 	var x [1]struct{}
 	_ = x[NodeNone-0]
 	_ = x[NodeDocument-1]
-	_ = x[NodeBlockquote-2]
+	_ = x[NodeBlockQuote-2]
 	_ = x[NodeList-3]
 	_ = x[NodeListItem-4]
 	_ = x[NodeCodeBlock-5]
@@ -29,7 +29,7 @@ func _() {
 	_ = x[NodeContent-18]
 }
 
-const _NodeType_name = "NodeNoneNodeDocumentNodeBlockquoteNodeListNodeListItemNodeCodeBlockNodeHTMLBlockNodeThematicBreakNodeHeadingNodeParagraphNodeCodeSpanNodeHTMLSpanNodeEmphasisNodeStrongNodeLinkNodeImageNodeSoftBreakNodeLineBreakNodeContent"
+const _NodeType_name = "NodeNoneNodeDocumentNodeBlockQuoteNodeListNodeListItemNodeCodeBlockNodeHTMLBlockNodeThematicBreakNodeHeadingNodeParagraphNodeCodeSpanNodeHTMLSpanNodeEmphasisNodeStrongNodeLinkNodeImageNodeSoftBreakNodeLineBreakNodeContent"
 
 var _NodeType_index = [...]uint8{0, 8, 20, 34, 42, 54, 67, 80, 97, 108, 121, 133, 145, 157, 167, 175, 184, 197, 210, 221}
 

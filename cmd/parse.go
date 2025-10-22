@@ -2,34 +2,104 @@ package cmd
 
 import (
 	"fmt"
+	"io"
+	"os"
+	"strings"
+
 	"github.com/spf13/cobra"
-    "markee/internal/parser"
+	"markee/internal/ast"
+	"markee/internal/parser"
 )
 
 var parseCmd = &cobra.Command{
-	Use:   "parse",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
-	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("parse called")
-	},
+	Use:   "parse [file]",
+	Short: "Parse markdown input and display AST",
+	Long:  "Parse markdown from a file or stdin and display the resulting AST structure.",
+	Args:  cobra.MaximumNArgs(1),
+	Run:   runParse,
 }
 
-func init() {
-	rootCmd.AddCommand(parseCmd)
+func runParse(cmd *cobra.Command, args []string) {
+	var input string
 
-	// Here you will define your flags and configuration settings.
+	if len(args) == 1 {
+		// Read from file
+		content, err := os.ReadFile(args[0])
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error reading file: %v\n", err)
+			os.Exit(1)
+		}
+		input = string(content)
+	} else {
+		// Read from stdin
+		content, err := io.ReadAll(os.Stdin)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error reading stdin: %v\n", err)
+			os.Exit(1)
+		}
+		input = string(content)
+	}
 
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// parseCmd.PersistentFlags().String("foo", "", "A help for foo")
+	doc := parser.Parse(input)
+	printTree(doc, 0)
+}
 
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// parseCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+func printTree(node ast.Node, depth int) {
+	indent := strings.Repeat("  ", depth)
+
+	switch n := node.(type) {
+	case *ast.Document:
+		fmt.Printf("%s[Document]\n", indent)
+	case *ast.Heading:
+		fmt.Printf("%s[Heading level=%d]\n", indent, n.Level)
+	case *ast.Paragraph:
+		fmt.Printf("%s[Paragraph]\n", indent)
+	case *ast.BlockQuote:
+		fmt.Printf("%s[BlockQuote]\n", indent)
+	case *ast.CodeBlock:
+		ftype := "indented"
+		if n.IsFenced {
+			ftype = "fenced"
+		}
+		fmt.Printf("%s[CodeBlock %s info=%q]\n", indent, ftype, n.Language)
+		if n.Literal != "" {
+			fmt.Printf("%s  Literal: %q\n", indent, n.Literal)
+		}
+	case *ast.ThematicBreak:
+		fmt.Printf("%s[ThematicBreak]\n", indent)
+	case *ast.List:
+		ltype := "unordered"
+		if n.IsOrdered {
+			ltype = "ordered"
+		}
+		fmt.Printf("%s[List %s tight=%v]\n", indent, ltype, n.IsTight)
+	case *ast.ListItem:
+		fmt.Printf("%s[ListItem]\n", indent)
+	case *ast.Content:
+		fmt.Printf("%s[Text] %q\n", indent, n.Literal)
+	case *ast.Emphasis:
+		fmt.Printf("%s[Emphasis]\n", indent)
+	case *ast.Strong:
+		fmt.Printf("%s[Strong]\n", indent)
+	case *ast.CodeSpan:
+		fmt.Printf("%s[Code] %q\n", indent, n.Literal)
+	case *ast.Link:
+		fmt.Printf("%s[Link dest=%q title=%q]\n", indent, n.Destination, n.Title)
+	case *ast.Image:
+		fmt.Printf("%s[Image dest=%q title=%q alt=%q]\n", indent, n.Destination, n.Title, n.AltText)
+	case *ast.LineBreak:
+		fmt.Printf("%s[LineBreak]\n", indent)
+	case *ast.SoftBreak:
+		fmt.Printf("%s[SoftBreak]\n", indent)
+	case *ast.HTMLBlock:
+		fmt.Printf("%s[HTMLBlock] %q\n", indent, n.Literal)
+	case *ast.HTMLSpan:
+		fmt.Printf("%s[HTMLInline] %q\n", indent, n.Literal)
+	default:
+		fmt.Printf("%s[Unknown: %T]\n", indent, node)
+	}
+
+	for _, child := range node.Children() {
+		printTree(child, depth+1)
+	}
 }

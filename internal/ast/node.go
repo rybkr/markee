@@ -1,68 +1,56 @@
 package ast
 
+type Node interface {
+	Type() NodeType
+	Parent() Node
+	SetParent(Node)
+	Children() []Node
+	AddChild(Node)
+	Accept(Visitor)
+}
+
+type Visitor interface {
+    Visit(node Node) VisitStatus
+}
+
 //go:generate stringer -type=NodeType
 type NodeType int
 
 const (
-    NodeNone NodeType = iota
+	NodeNone NodeType = iota
 
-    // Container blocks are block nodes that can have other blocks as children.
-    // See: https://spec.commonmark.org/0.31.2/#container-blocks
-    NodeDocument
-    NodeBlockquote
-    NodeList
-    NodeListItem
+	// Container blocks are block nodes that can have other blocks as children.
+	// See: https://spec.commonmark.org/0.31.2/#container-blocks
+	NodeDocument
+	NodeBlockQuote
+	NodeList
+	NodeListItem
 
-    // Leaf blocks are block nodes that cannot have other blocks as children.
-    // See: https://spec.commonmark.org/0.31.2/#leaf-blocks
-    NodeCodeBlock
-    NodeHTMLBlock
-    NodeThematicBreak
-    NodeHeading
-    NodeParagraph
+	// Leaf blocks are block nodes that cannot have other blocks as children.
+	// See: https://spec.commonmark.org/0.31.2/#leaf-blocks
+	NodeCodeBlock
+	NodeHTMLBlock
+	NodeThematicBreak
+	NodeHeading
+	NodeParagraph
 
-    // Inlines are parsed horizontally from a one-line string.
-    // See: https://spec.commonmark.org/0.31.2/#inlines
-    NodeCodeSpan
-    NodeHTMLSpan
-    NodeEmphasis
-    NodeStrong
-    NodeLink
-    NodeImage
-    NodeSoftBreak
-    NodeLineBreak
-    NodeContent
+	// Inlines are parsed horizontally from a one-line string.
+	// See: https://spec.commonmark.org/0.31.2/#inlines
+	NodeCodeSpan
+	NodeHTMLSpan
+	NodeEmphasis
+	NodeStrong
+	NodeLink
+	NodeImage
+	NodeSoftBreak
+	NodeLineBreak
+	NodeContent
 )
 
-type Node struct {
-    FirstChild *Node
-    LastChild  *Node
-    Next       *Node
-    Prev       *Node
-    Parent     *Node
-
-    Type  NodeType
-    Pos   Position
-    Flags uint
-
-    Literal string
-}
-
-func New(type NodeType) *Node {
-    return &Node{
-        Type:  type,
-        Flags: FlagOpen,
-    }
-}
+type VisitStatus int
 
 const (
-    FlagOpen uint = 1 << iota
-    FlagPrevLineBlank
+    VisitContinue VisitStatus = iota
+    VisitSkipChildren
+    VisitStop
 )
-
-type Position struct {
-    StartLine   int
-    StartColumn int
-    EndLine     int
-    EndColumn   int
-}
