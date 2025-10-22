@@ -4,6 +4,8 @@ import (
 	"markee/internal/ast"
 )
 
+// ParseBlocks parses block-level content and constructs the AST.
+// See: https://spec.commonmark.org/0.31.2/#phase-1-block-structure
 func ParseBlocks(ctx *Context) {
 	for ctx.HasMoreLines() {
 		processLine(ctx)
@@ -14,9 +16,8 @@ func ParseBlocks(ctx *Context) {
 
 func processLine(ctx *Context) {
 	line := ctx.CurrentLine()
-	lineInfo := AnalyzeLine(line)
+	//lineInfo := AnalyzeLine(line)
 	
-	// CRITICAL: Handle fenced code blocks first (they have highest precedence)
 	if isInFencedCodeBlock(ctx) {
 		handleCodeBlockLine(ctx, lineInfo)
 		return
@@ -159,7 +160,12 @@ func tryNewBlocks(ctx *Context, lineInfo *LineInfo) {
 		ctx.OpenBlocks = append(ctx.OpenBlocks, codeBlock)
 		ctx.Tip = codeBlock
 		ctx.CurrentFence = fence
-		// Important: Don't add the fence line itself as content
+		return
+	}
+
+	// List item (NEW!)
+	if lineInfo.ListMarker != nil {
+		handleListItem(ctx, lineInfo)
 		return
 	}
 
@@ -178,9 +184,7 @@ func tryNewBlocks(ctx *Context, lineInfo *LineInfo) {
 
 	// Indented code block
 	if lineInfo.Indent >= 4 {
-		// Can't interrupt a paragraph
 		if ctx.Tip.Type() == ast.NodeParagraph {
-			// Add to paragraph instead
 			textNode := ast.NewContent(content)
 			ctx.Tip.AddChild(textNode)
 			return
@@ -191,7 +195,6 @@ func tryNewBlocks(ctx *Context, lineInfo *LineInfo) {
 		ctx.OpenBlocks = append(ctx.OpenBlocks, codeBlock)
 		ctx.Tip = codeBlock
 		
-		// Remove the 4-space indent
 		if len(content) >= 4 {
 			codeBlock.Literal = content[4:]
 		}
@@ -206,10 +209,86 @@ func tryNewBlocks(ctx *Context, lineInfo *LineInfo) {
 		ctx.Tip = para
 	}
 	
-	// Add content to paragraph
 	if content != "" {
 		textNode := ast.NewContent(content)
 		ctx.Tip.AddChild(textNode)
+	}
+}
+
+// NEW: Handle list items
+func handleListItem(ctx *Context, lineInfo *LineInfo) {
+	marker := lineInfo.ListMarker
+	
+	// CRITICAL: Close blocks down to the list level
+	// When we see a new list marker, close any open list item and its children
+	for len(ctx.OpenBlocks) > 0 {
+		tip := ctx.Tip
+		tipType := tip.Type()
+		
+		// Stop if we're at a list or above
+		if tipType == ast.NodeList || tipType == ast.NodeDocument || tipType == ast.NodeBlockQuote {
+			break
+		}
+		
+		// Close this block
+		finalizeBlock(tip)
+		ctx.OpenBlocks = ctx.OpenBlocks[:len(ctx.OpenBlocks)-1]
+		if len(ctx.OpenBlocks) > 0 {
+			ctx.Tip = ctx.OpenBlocks[len(ctx.OpenBlocks)-1]
+		}
+	}
+	
+	// Now ctx.Tip should be List or Document or BlockQuote
+	var list *ast.List
+	
+	if ctx.Tip.Type() == ast.NodeList {
+		list = ctx.Tip.(*ast.List)
+		
+		// Check if marker type matches
+		if list.IsOrdered != marker.IsOrdered {
+			// Different list type - close current list and start new one
+			finalizeBlock(list)
+			ctx.OpenBlocks = ctx.OpenBlocks[:len(ctx.OpenBlocks)-1]
+			ctx.Tip = ctx.OpenBlocks[len(ctx.OpenBlocks)-1]
+			list = nil
+		} else if list.IsOrdered && list.Delimiter != marker.Delimiter {
+			// Different delimiter - close and start new list
+			finalizeBlock(list)
+			ctx.OpenBlocks = ctx.OpenBlocks[:len(ctx.OpenBlocks)-1]
+			ctx.Tip = ctx.OpenBlocks[len(ctx.OpenBlocks)-1]
+			list = nil
+		}
+	}
+	
+	// Create new list if needed
+	if list == nil {
+		list = ast.NewList(marker.IsOrdered)
+		if marker.IsOrdered {
+			list.StartNum = marker.StartNum
+			list.Delimiter = marker.Delimiter
+		} else {
+			list.Delimiter = marker.Marker
+		}
+		ctx.AddChild(list)
+		ctx.OpenBlocks = append(ctx.OpenBlocks, list)
+		ctx.Tip = list
+	}
+	
+	// Create list item
+	item := ast.NewListItem()
+	list.AddChild(item)
+	ctx.OpenBlocks = append(ctx.OpenBlocks, item)
+	ctx.Tip = item
+	
+	// Process content after the marker
+	if lineInfo.Content != "" {
+		// Content on same line as marker
+		modifiedLineInfo := &LineInfo{
+			Raw:     lineInfo.Content,
+			Content: lineInfo.Content,
+			Blank:   false,
+		}
+		tryNewBlocks(ctx, modifiedLineInfo)
 	}
 }
 
