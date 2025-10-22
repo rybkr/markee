@@ -6,34 +6,20 @@ import (
 	"unicode"
 )
 
+// block.Parser handles block-level structure parsing.
+// See: https://spec.commonmark.org/0.31.2/#phase-1-block-structure
 type Parser struct {
-	lines   []string
-	line    int
-	offset  int
-	indent  int
-	root    *Node
-	current *Node
 }
 
-func New(input string) *Parser {
-	lines := strings.Split(input, "\n")
-	root := ast.New(NodeDocument)
+func New() *Parser {
+}
 
-	return &Parser{
-		lines:   lines,
-		line:    0,
-		root:    root,
-		current: root,
-	}
+func (p *Parser) Parse(input string) *ast.Node {
+    lines := reNewline.Split(text, -1)
+    for _, line := range lines {
+        p.incorporateLine(line)
+    }
 }
 
 func (p *Parser) incorporateLine(line string) {
-    p.offset = 0
-    p.indent = 0
-
-    for p.offset < len(line) && line[p.offset] == ' ' {
-        p.indent++
-        p.offset++
-        if p.indent >= 
-    }
 }
