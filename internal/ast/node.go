@@ -42,6 +42,27 @@ type Node struct {
     Parent     *Node
 
     Type  NodeType
-    Pos   [][2]int // [[startLine, startCol], [endLine, endCol]]
+    Pos   Position
     Flags uint
+
+    Literal string
+}
+
+func New(type NodeType) *Node {
+    return &Node{
+        Type:  type,
+        Flags: FlagOpen,
+    }
+}
+
+const (
+    FlagOpen uint = 1 << iota
+    FlagPrevLineBlank
+)
+
+type Position struct {
+    StartLine   int
+    StartColumn int
+    EndLine     int
+    EndColumn   int
 }
