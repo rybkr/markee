@@ -33,7 +33,7 @@ func (c *Context) CurrentLine() string {
     }
 
     end := c.Pos
-    for end < len(c.Input) && c.Input[end] != '\n' && c.Input[end] == '\r' {
+    for end < len(c.Input) && c.Input[end] != '\n' && c.Input[end] != '\r' {
         end++
     }
 

@@ -18,6 +18,7 @@ func processLine(ctx *Context) {
 	containersMatched := checkOpenContainers(ctx, lineInfo)
 	closeUnmatchedBlocks(ctx, containersMatched)
 	tryNewBlocks(ctx, lineInfo)
+    addTextContent(ctx, lineInfo.Content)
 }
 
 func checkOpenContainers(ctx *Context, lineInfo *LineInfo) int {
@@ -180,7 +181,7 @@ func finalizeBlock(block ast.Node) {
 }
 
 func finalizeDocument(ctx *Context) {
-	for ctx.Tip != ctx.Doc {
+	for ctx.Tip.Type() != ast.NodeDocument {
 		ctx.CloseBlock()
 	}
 }

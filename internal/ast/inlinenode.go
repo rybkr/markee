@@ -7,7 +7,7 @@ type CodeSpan struct {
 
 func NewCodeSpan(literal string) *CodeSpan {
 	return &CodeSpan{
-		BaseNode: New(NodeLineBreak),
+		BaseNode: New(NodeCodeSpan),
 		Literal:  literal,
 	}
 }
