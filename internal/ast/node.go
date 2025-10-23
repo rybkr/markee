@@ -48,41 +48,41 @@ func (n *BaseNode) Accept(v Visitor) {
 	var status VisitStatus = VisitStop
 	switch n.Type() {
 	case NodeDocument:
-		status = v.VisitDocument()
+		status = v.VisitDocument(n)
 	case NodeBlockQuote:
-		status = v.VisitBlockQuote()
+		status = v.VisitBlockQuote(n)
 	case NodeList:
-		status = v.VisitList()
+		status = v.VisitList(n)
 	case NodeListItem:
-		status = v.VisitListItem()
+		status = v.VisitListItem(n)
 	case NodeCodeBlock:
-		status = v.VisitCodeBlock()
+		status = v.VisitCodeBlock(n)
 	case NodeHTMLBlock:
-		status = v.VisitHTMLBlock()
+		status = v.VisitHTMLBlock(n)
 	case NodeThematicBreak:
-		status = v.VisitThematicBreak()
+		status = v.VisitThematicBreak(n)
 	case NodeHeading:
-		status = v.VisitHeading()
+		status = v.VisitHeading(n)
 	case NodeParagraph:
-		status = v.VisitParagraph()
+		status = v.VisitParagraph(n)
 	case NodeCodeSpan:
-		status = v.VisitCodeSpan()
+		status = v.VisitCodeSpan(n)
 	case NodeHTMLSpan:
-		status = v.VisitHTMLSpan()
+		status = v.VisitHTMLSpan(n)
 	case NodeEmphasis:
-		status = v.VisitEmphasis()
+		status = v.VisitEmphasis(n)
 	case NodeStrong:
-		status = v.VisitStrong()
+		status = v.VisitStrong(n)
 	case NodeLink:
-		status = v.VisitLink()
+		status = v.VisitLink(n)
 	case NodeImage:
-		status = v.VisitImage()
+		status = v.VisitImage(n)
 	case NodeSoftBreak:
-		status = v.VisitSoftBreak()
+		status = v.VisitSoftBreak(n)
 	case NodeLineBreak:
-		status = v.VisitLineBreak()
+		status = v.VisitLineBreak(n)
 	case NodeContent:
-		status = v.VisitContent()
+		status = v.VisitContent(n)
 	}
 
 	switch status {
