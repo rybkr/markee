@@ -33,7 +33,10 @@ func NewList(isOrdered bool) *List {
 	}
 }
 
-type ListItem struct{ BaseNode }
+type ListItem struct {
+    BaseNode
+    Indent int
+}
 
 func NewListItem() *ListItem {
 	return &ListItem{

@@ -6,6 +6,8 @@ type Node interface {
 	SetParent(Node)
 	Children() []Node
 	AddChild(Node)
+    IsOpen() bool
+    SetOpen(bool)
 	Accept(Visitor) VisitStatus
 }
 
@@ -13,6 +15,7 @@ type BaseNode struct {
 	nodeType NodeType
 	parent   Node
 	children []Node
+    isOpen   bool
 }
 
 func New(t NodeType) BaseNode {
@@ -20,6 +23,7 @@ func New(t NodeType) BaseNode {
 		nodeType: t,
 		parent:   nil,
 		children: make([]Node, 0),
+        isOpen:   true,
 	}
 }
 
@@ -44,7 +48,15 @@ func (n *BaseNode) AddChild(child Node) {
 	n.children = append(n.children, child)
 }
 
-func (n *BaseNode) Accept(v Visitor) {
+func (n *BaseNode) IsOpen() bool {
+    return n.isOpen
+}
+
+func (n *BaseNode) SetOpen(isOpen bool) {
+    n.isOpen = isOpen
+}
+
+func (n *BaseNode) Accept(v Visitor) VisitStatus {
 	var status VisitStatus = VisitStop
 	switch n.Type() {
 	case NodeDocument:
@@ -97,6 +109,8 @@ func (n *BaseNode) Accept(v Visitor) {
 			}
 		}
 		return VisitContinue
+    default:
+        return VisitStop
 	}
 }
 
@@ -105,7 +119,7 @@ type NodeType int
 const (
 	// Container blocks are block nodes that can have other blocks as children.
 	// See: https://spec.commonmark.org/0.31.2/#container-blocks
-	NodeDocument
+	NodeDocument NodeType = iota
 	NodeBlockQuote
 	NodeList
 	NodeListItem
