@@ -56,6 +56,12 @@ func (l *Line) ConsumeWhitespace() int {
 	return consumed
 }
 
+func (l *Line) ConsumeAll() int {
+    consumed := len(l.Content)
+    l.Consume(consumed)
+    return consumed
+}
+
 func (l *Line) Peek(i int) byte {
 	if i >= len(l.Content) {
 		return 0
