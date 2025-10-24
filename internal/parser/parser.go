@@ -40,8 +40,14 @@ func incorporateLine(ctx *Context, line *Line) {
 	// This logic differs from the extension logic because we need to consider the precedence of
 	// block nodes as defined by CommonMark, rather than the order in which they appear in the AST.
 	// If we find a match, we should close unmatched blocks from the previous step.
-	for block := matchNewBlock(line); block != nil; block = matchNewBlock(line) {
+	for block, tip := matchNewBlock(line); block != nil; block, tip = matchNewBlock(line) {
 		ctx.AddChild(block)
-		ctx.SetTip(block)
+		ctx.SetTip(tip)
 	}
+
+    // Next, we look at the rest fo the line and incorporate the content into the last open block.
+    if !line.IsEmpty() {
+        content := ast.NewContent(strings.TrimSpace(line.Content))
+        ctx.Tip.AddChild(content)
+    }
 }

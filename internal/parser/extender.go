@@ -26,3 +26,12 @@ func (e *BlockExtender) VisitDocument(node ast.Node) ast.VisitStatus {
     e.lastMatch = node
 	return ast.VisitLastChild
 }
+
+func (e *BlockExtender) VisitParagraph(node ast.Node) ast.VisitStatus {
+    if !e.line.IsBlank {
+        node.SetOpen(true)
+        e.lastMatch = node
+        return ast.VisitLastChild
+    }
+    return ast.VisitStop
+}

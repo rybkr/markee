@@ -6,19 +6,25 @@ import (
 	"strings"
 )
 
-func matchNewBlock(line *Line) ast.Node {
+func matchNewBlock(line *Line) (ast.Node, ast.Node) {
 	if thematicBreak := matchThematicBreak(line); thematicBreak != nil {
 		line.ConsumeAll()
-		return thematicBreak
+		return thematicBreak, thematicBreak
 	}
 
 	if heading := matchATXHeading(line); heading != nil {
 		line.Consume(heading.Level)
 		line.ConsumeWhitespace()
-		return heading
+		return heading, heading
 	}
 
-	return nil
+    if blockquote, paragraph := matchBlockQuote(line); blockquote != nil {
+        line.Consume(1)
+        line.ConsumeWhitespace()
+        return blockquote, paragraph
+    }
+
+	return nil, nil
 }
 
 // See: https://spec.commonmark.org/0.31.2/#thematic-breaks
@@ -58,4 +64,19 @@ func matchATXHeading(line *Line) *ast.Heading {
 		return heading
 	}
 	return nil
+}
+
+// See: https://spec.commonmark.org/0.31.2/#block-quotes
+func matchBlockQuote(line *Line) (*ast.BlockQuote, *ast.Paragraph) {
+    //      > : block quote marker
+    // [ \t]? : optional single space or tab after '>'
+    //   (.*) : capture content of the line
+    reBlockQuote := regexp.MustCompile(`^>[ \t]?(.*)$`)
+    if matches := reBlockQuote.FindStringSubmatch(line.Content); matches != nil {
+        blockquote := ast.NewBlockQuote()
+        paragraph := ast.NewParagraph()
+        blockquote.AddChild(paragraph)
+        return blockquote, paragraph
+    }
+    return nil, nil
 }
