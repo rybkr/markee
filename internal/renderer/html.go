@@ -1,6 +1,7 @@
 package renderer
 
 import (
+    "fmt"
 	"markee/internal/ast"
 	"strings"
 )
@@ -39,11 +40,13 @@ func (r *HTMLRenderer) VisitBlockQuote(node ast.Node) {
 }
 
 func (r *HTMLRenderer) VisitHeading(node ast.Node) {
-    r.output.WriteString("<h1>")
-    for _, child := range node.Children() {
-        child.Accept(r)
+    if heading, ok := node.(*ast.Heading); ok {
+        r.output.WriteString(fmt.Sprintf("<h%d>", heading.Level))
+        for _, child := range node.Children() {
+            child.Accept(r)
+        }
+        r.output.WriteString(fmt.Sprintf("</h%d>\n", heading.Level))
     }
-    r.output.WriteString("</h1>\n")
 }
 
 func (r *HTMLRenderer) VisitParagraph(node ast.Node) {

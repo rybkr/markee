@@ -2,7 +2,8 @@ package spec_test
 
 import (
 	"encoding/json"
-    "fmt"
+	"flag"
+	"fmt"
 	"markee/internal/parser"
 	"markee/internal/renderer"
 	"os"
@@ -34,11 +35,23 @@ func loadSpec(t *testing.T) []CommonmarkExample {
 	return examples
 }
 
+var categoryFilter string
+
+func TestMain(m *testing.M) {
+    flag.StringVar(&categoryFilter, "category", "", "Run only examples from the specified section")
+    flag.Parse()
+    os.Exit(m.Run())
+}
+
 func TestCommonmarkCompliance(t *testing.T) {
 	examples := loadSpec(t)
-    var passed, failed int
+    passed, failed := 0, 0
 
 	for _, ex := range examples {
+        if categoryFilter != "" && ex.Section != categoryFilter {
+			continue
+		}
+
 		ex := ex
 		t.Run(fmt.Sprintf("%s#%d", ex.Section, ex.Example), func(t *testing.T) {
 			doc := parser.Parse(ex.Markdown)
@@ -55,7 +68,5 @@ func TestCommonmarkCompliance(t *testing.T) {
 		})
 	}
 
-    if failed > 0 {
-        t.Logf("Passed %d, Failed %d, Total %d", passed, failed, passed + failed)
-    }
+	t.Logf("Passed %d, Failed %d, Total %d", passed, failed, passed+failed)
 }
