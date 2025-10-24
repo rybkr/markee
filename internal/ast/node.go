@@ -23,7 +23,7 @@ func New(t NodeType) BaseNode {
 		nodeType: t,
 		parent:   nil,
 		children: make([]Node, 0),
-        isOpen:   true,
+        isOpen:   false,
 	}
 }
 
@@ -58,6 +58,7 @@ func (n *BaseNode) SetOpen(isOpen bool) {
 
 func (n *BaseNode) Accept(v Visitor) VisitStatus {
 	var status VisitStatus = VisitStop
+
 	switch n.Type() {
 	case NodeDocument:
 		status = v.VisitDocument(n)

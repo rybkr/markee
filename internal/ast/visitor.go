@@ -23,29 +23,28 @@ type Visitor interface {
 
 type BaseVisitor struct{}
 
-func (v *BaseVisitor) VisitDocument(node Node) VisitStatus      { return VisitContinue }
-func (v *BaseVisitor) VisitBlockQuote(node Node) VisitStatus    { return VisitContinue }
-func (v *BaseVisitor) VisitList(node Node) VisitStatus          { return VisitContinue }
-func (v *BaseVisitor) VisitListItem(node Node) VisitStatus      { return VisitContinue }
-func (v *BaseVisitor) VisitCodeBlock(node Node) VisitStatus     { return VisitContinue }
-func (v *BaseVisitor) VisitHTMLBlock(node Node) VisitStatus     { return VisitContinue }
-func (v *BaseVisitor) VisitThematicBreak(node Node) VisitStatus { return VisitContinue }
-func (v *BaseVisitor) VisitHeading(node Node) VisitStatus       { return VisitContinue }
-func (v *BaseVisitor) VisitParagraph(node Node) VisitStatus     { return VisitContinue }
-func (v *BaseVisitor) VisitCodeSpan(node Node) VisitStatus      { return VisitContinue }
-func (v *BaseVisitor) VisitHTMLSpan(node Node) VisitStatus      { return VisitContinue }
-func (v *BaseVisitor) VisitEmphasis(node Node) VisitStatus      { return VisitContinue }
-func (v *BaseVisitor) VisitStrong(node Node) VisitStatus        { return VisitContinue }
-func (v *BaseVisitor) VisitLink(node Node) VisitStatus          { return VisitContinue }
-func (v *BaseVisitor) VisitImage(node Node) VisitStatus         { return VisitContinue }
-func (v *BaseVisitor) VisitSoftBreak(node Node) VisitStatus     { return VisitContinue }
-func (v *BaseVisitor) VisitLineBreak(node Node) VisitStatus     { return VisitContinue }
-func (v *BaseVisitor) VisitContent(node Node) VisitStatus       { return VisitContinue }
+func (v *BaseVisitor) VisitDocument(node Node) VisitStatus      { return VisitStop }
+func (v *BaseVisitor) VisitBlockQuote(node Node) VisitStatus    { return VisitStop }
+func (v *BaseVisitor) VisitList(node Node) VisitStatus          { return VisitStop }
+func (v *BaseVisitor) VisitListItem(node Node) VisitStatus      { return VisitStop }
+func (v *BaseVisitor) VisitCodeBlock(node Node) VisitStatus     { return VisitStop }
+func (v *BaseVisitor) VisitHTMLBlock(node Node) VisitStatus     { return VisitStop }
+func (v *BaseVisitor) VisitThematicBreak(node Node) VisitStatus { return VisitStop }
+func (v *BaseVisitor) VisitHeading(node Node) VisitStatus       { return VisitStop }
+func (v *BaseVisitor) VisitParagraph(node Node) VisitStatus     { return VisitStop }
+func (v *BaseVisitor) VisitCodeSpan(node Node) VisitStatus      { return VisitStop }
+func (v *BaseVisitor) VisitHTMLSpan(node Node) VisitStatus      { return VisitStop }
+func (v *BaseVisitor) VisitEmphasis(node Node) VisitStatus      { return VisitStop }
+func (v *BaseVisitor) VisitStrong(node Node) VisitStatus        { return VisitStop }
+func (v *BaseVisitor) VisitLink(node Node) VisitStatus          { return VisitStop }
+func (v *BaseVisitor) VisitImage(node Node) VisitStatus         { return VisitStop }
+func (v *BaseVisitor) VisitSoftBreak(node Node) VisitStatus     { return VisitStop }
+func (v *BaseVisitor) VisitLineBreak(node Node) VisitStatus     { return VisitStop }
+func (v *BaseVisitor) VisitContent(node Node) VisitStatus       { return VisitStop }
 
 type VisitStatus int
 
 const (
-	VisitContinue VisitStatus = iota
+	VisitStop VisitStatus = iota
     VisitLastChild
-	VisitStop
 )
