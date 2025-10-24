@@ -22,16 +22,25 @@ func (e *BlockExtender) LastMatch() ast.Node {
 }
 
 func (e *BlockExtender) VisitDocument(node ast.Node) {
-	node.SetOpen(true)
     e.lastMatch = node
     if child := node.LastChild(); child != nil {
         child.Accept(e)
     }
 }
 
+func (e *BlockExtender) VisitBlockQuote(node ast.Node) {
+    if e.line.Indent < 4 && e.line.Peek(0) == '>' {
+        e.line.Consume(1)
+        e.line.ConsumeWhitespace()
+        e.lastMatch = node
+        if child := node.LastChild(); child != nil {
+            child.Accept(e)
+        }
+    }
+}
+
 func (e *BlockExtender) VisitParagraph(node ast.Node) {
     if !e.line.IsBlank {
-        node.SetOpen(true)
         e.lastMatch = node
         if child := node.LastChild(); child != nil {
             child.Accept(e)
