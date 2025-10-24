@@ -2,6 +2,10 @@ package ast
 
 type Node interface {
 	Type() NodeType
+    IsLeaf() bool
+    IsContainer() bool
+    IsBlock() bool
+    IsInline() bool
 	Parent() Node
 	SetParent(Node)
 	Children() []Node
@@ -29,6 +33,22 @@ func New(t NodeType) BaseNode {
 
 func (n *BaseNode) Type() NodeType {
 	return n.nodeType
+}
+
+func (n *BaseNode) IsLeaf() bool {
+    return n.Type() >= nodeLeafStart && n.Type() <= nodeLeafEnd
+}
+
+func (n *BaseNode) IsContainer() bool {
+    return n.Type() >= nodeContainerStart && n.Type() <= nodeContainerEnd
+}
+
+func (n *BaseNode) IsBlock() bool {
+    return n.Type() >= nodeBlockStart && n.Type() <= nodeBlockEnd
+}
+
+func (n *BaseNode) IsInline() bool {
+    return n.Type() >= nodeInlineStart && n.Type() <= nodeInlineEnd
 }
 
 func (n *BaseNode) Parent() Node {
@@ -103,6 +123,10 @@ func (n *BaseNode) Accept(v Visitor) VisitStatus {
         if children := n.Children(); len(children) > 0 {
             lastChild := children[len(children)-1]
             return lastChild.Accept(v)
+        }
+    case VisitChildrenDFS:
+        for _, child := range n.Children() {
+            child.Accept(v)
         }
 	}
 

@@ -24,6 +24,10 @@ func matchNewBlock(line *Line) (ast.Node, ast.Node) {
         return blockquote, paragraph
     }
 
+    if paragraph := matchParagraph(line); paragraph != nil {
+        return paragraph, paragraph
+    }
+
 	return nil, nil
 }
 
@@ -79,4 +83,12 @@ func matchBlockQuote(line *Line) (*ast.BlockQuote, *ast.Paragraph) {
         return blockquote, paragraph
     }
     return nil, nil
+}
+
+// See: https://spec.commonmark.org/0.31.2/#paragraphs
+func matchParagraph(line *Line) *ast.Paragraph {
+    if !line.IsBlank {
+        return ast.NewParagraph()
+    }
+    return nil
 }

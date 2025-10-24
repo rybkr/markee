@@ -47,4 +47,5 @@ type VisitStatus int
 const (
 	VisitStop VisitStatus = iota
     VisitLastChild
+    VisitChildrenDFS
 )

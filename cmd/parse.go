@@ -9,6 +9,7 @@ import (
 	"github.com/spf13/cobra"
 	"markee/internal/ast"
 	"markee/internal/parser"
+	"markee/internal/renderer"
 )
 
 var parseCmd = &cobra.Command{
@@ -41,7 +42,9 @@ func runParse(cmd *cobra.Command, args []string) {
 	}
 
 	doc := parser.Parse(input)
-	printTree(doc, 0)
+    html := renderer.RenderHTML(doc)
+    printTree(doc, 0)
+    fmt.Println(html)
 }
 
 func printTree(node ast.Node, depth int) {

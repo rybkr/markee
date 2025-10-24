@@ -1,6 +1,1 @@
-***
-
-> Quote
-quote
-
-***
+Quote

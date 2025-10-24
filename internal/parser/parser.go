@@ -43,6 +43,9 @@ func incorporateLine(ctx *Context, line *Line) {
 	for block, tip := matchNewBlock(line); block != nil; block, tip = matchNewBlock(line) {
 		ctx.AddChild(block)
 		ctx.SetTip(tip)
+        if ctx.Tip.IsLeaf() {
+            break
+        }
 	}
 
     // Next, we look at the rest fo the line and incorporate the content into the last open block.
