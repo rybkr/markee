@@ -1,35 +1,44 @@
 package parser
 
 import (
+    "bufio"
 	"markee/internal/ast"
-	"regexp"
+    "strings"
 )
 
-var reNewline = regexp.MustCompile(`\n|\r|\r\n`)
-
+// Parse is the main parsing entry point, turns raw strings into an AST.
+// See: https://spec.commonmark.org/0.31.2/#appendix-a-parsing-strategy
 func Parse(input string) *ast.Document {
-	ctx := NewContext()
-	lines := reNewline.Split(input, -1)
+    ctx := NewContext()
 
-	for _, line := range lines {
-		incorporateLine(ctx, NewLine(line))
-	}
-	closeUnmatchedBlocks(ctx)
+    scanner := bufio.NewScanner(strings.NewReader(input))
+    for scanner.Scan() {
+        line := NewLine(scanner.Text())
+        incorporateLine(ctx, line)
+    }
 
-	return ctx.Doc
+    return ctx.Doc
 }
 
+// incorporateLine handles line-by-line block parsing logic.
+// See: https://spec.commonmark.org/0.31.2/#phase-1-block-structure
 func incorporateLine(ctx *Context, line *Line) {
-}
+    // First we need to check which blocks the line "extends".  To extend a block, the line must
+    // meet a requirement imposed by the block's type. For example, to extend a BlockQuote, the
+    // line must begin with '>'.
+    // Here, while we check which blocks are extended by the line, we can also consume relevant
+    // tokens from the line. For example, if a BlockQuote is extended by the line "> continued...",
+    // then the node should be set to open the the line's content should become "continued...".
+    extender := NewBlockExtender(line)
+    ctx.Doc.Accept(extender)
 
-func closeUnmatchedBlocks(ctx *Context) {
-}
-
-func handleUnmatched(ctx *Context, line *Line) {
-	if ctx.Tip.Type() == ast.NodeParagraph {
-		return
-	}
-	paragraph := ast.NewParagraph()
-	ctx.AddChild(paragraph)
-	ctx.SetTip(paragraph)
+    // Second, we should check the line for any tokens that would create new blocks. For example,
+    // if after consuming the extension markers, the line still starts with '>', then we should
+    // create a new BlockQuote node.
+    // This logic differs from the extension logic because we need to consider the precedence of
+    // block nodes as defined by CommonMark, rather than the order in which they appear in the AST.
+    for block := matchNewBlock(line); block != nil; block = matchNewBlock(line) {
+        ctx.AddChild(block)
+        ctx.SetTip(block)
+    }
 }

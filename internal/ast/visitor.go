@@ -46,6 +46,6 @@ type VisitStatus int
 
 const (
 	VisitContinue VisitStatus = iota
-	VisitSkipChildren
+    VisitLastChild
 	VisitStop
 )

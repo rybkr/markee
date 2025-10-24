@@ -98,20 +98,14 @@ func (n *BaseNode) Accept(v Visitor) VisitStatus {
 	}
 
 	switch status {
-	case VisitStop:
-		return VisitStop
-	case VisitSkipChildren:
-		return VisitContinue
-	case VisitContinue:
-		for _, child := range n.Children() {
-			if child.Accept(v) == VisitStop {
-				return VisitStop
-			}
-		}
-		return VisitContinue
-    default:
-        return VisitStop
+    case VisitLastChild:
+        if children := n.Children(); len(children) > 0 {
+            lastChild := children[len(children)-1]
+            return lastChild.Accept(v)
+        }
 	}
+
+    return VisitStop
 }
 
 type NodeType int

@@ -34,13 +34,14 @@ func NewList(isOrdered bool) *List {
 }
 
 type ListItem struct {
-    BaseNode
-    Indent int
+	BaseNode
+	Indent int
 }
 
-func NewListItem() *ListItem {
+func NewListItem(indent int) *ListItem {
 	return &ListItem{
 		BaseNode: New(NodeListItem),
+		Indent:   indent,
 	}
 }
 
