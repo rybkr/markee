@@ -12,6 +12,10 @@ func NewCodeSpan(literal string) *CodeSpan {
 	}
 }
 
+func (c *CodeSpan) Accept(v Visitor) {
+    v.VisitCodeSpan(c)
+}
+
 type HTMLSpan struct {
 	BaseNode
 	Literal string
@@ -24,6 +28,10 @@ func NewHTMLSpan(literal string) *HTMLSpan {
 	}
 }
 
+func (h *HTMLSpan) Accept(v Visitor) {
+    v.VisitHTMLSpan(h)
+}
+
 type Emphasis struct{ BaseNode }
 
 func NewEmphasis() *Emphasis {
@@ -32,12 +40,20 @@ func NewEmphasis() *Emphasis {
 	}
 }
 
+func (e *Emphasis) Accept(v Visitor) {
+    v.VisitEmphasis(e)
+}
+
 type Strong struct{ BaseNode }
 
 func NewStrong() *Strong {
 	return &Strong{
 		BaseNode: New(NodeStrong),
 	}
+}
+
+func (s *Strong) Accept(v Visitor) {
+    v.VisitStrong(s)
 }
 
 type Link struct {
@@ -52,6 +68,10 @@ func NewLink(destination, title string) *Link {
 		Destination: destination,
 		Title:       title,
 	}
+}
+
+func (l *Link) Accept(v Visitor) {
+    v.VisitLink(l)
 }
 
 type Image struct {
@@ -70,6 +90,10 @@ func NewImage(destination, title, altText string) *Image {
 	}
 }
 
+func (i *Image) Accept(v Visitor) {
+    v.VisitImage(i)
+}
+
 type SoftBreak struct{ BaseNode }
 
 func NewSoftBreak() *SoftBreak {
@@ -78,12 +102,20 @@ func NewSoftBreak() *SoftBreak {
 	}
 }
 
+func (s *SoftBreak) Accept(v Visitor) {
+    v.VisitSoftBreak(s)
+}
+
 type LineBreak struct{ BaseNode }
 
 func NewLineBreak() *LineBreak {
 	return &LineBreak{
 		BaseNode: New(NodeLineBreak),
 	}
+}
+
+func (l *LineBreak) Accept(v Visitor) {
+    v.VisitLineBreak(l)
 }
 
 type Content struct {
@@ -98,20 +130,6 @@ func NewContent(literal string) *Content {
 	}
 }
 
-func (c *Content) Accept(v Visitor) VisitStatus {
-    status := v.VisitContent(c)
-    
-	switch status {
-    case VisitLastChild:
-        if children := c.Children(); len(children) > 0 {
-            lastChild := children[len(children)-1]
-            return lastChild.Accept(v)
-        }
-    case VisitChildrenDFS:
-        for _, child := range c.Children() {
-            child.Accept(v)
-        }
-	}
-
-    return VisitStop
+func (c *Content) Accept(v Visitor) {
+    v.VisitContent(c)
 }

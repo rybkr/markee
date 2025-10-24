@@ -21,17 +21,20 @@ func (e *BlockExtender) LastMatch() ast.Node {
     return e.lastMatch
 }
 
-func (e *BlockExtender) VisitDocument(node ast.Node) ast.VisitStatus {
+func (e *BlockExtender) VisitDocument(node ast.Node) {
 	node.SetOpen(true)
     e.lastMatch = node
-	return ast.VisitLastChild
+    if child := node.LastChild(); child != nil {
+        child.Accept(e)
+    }
 }
 
-func (e *BlockExtender) VisitParagraph(node ast.Node) ast.VisitStatus {
+func (e *BlockExtender) VisitParagraph(node ast.Node) {
     if !e.line.IsBlank {
         node.SetOpen(true)
         e.lastMatch = node
-        return ast.VisitLastChild
+        if child := node.LastChild(); child != nil {
+            child.Accept(e)
+        }
     }
-    return ast.VisitStop
 }

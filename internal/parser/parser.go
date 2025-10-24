@@ -40,9 +40,9 @@ func incorporateLine(ctx *Context, line *Line) {
 	// This logic differs from the extension logic because we need to consider the precedence of
 	// block nodes as defined by CommonMark, rather than the order in which they appear in the AST.
 	// If we find a match, we should close unmatched blocks from the previous step.
-	for block, tip := matchNewBlock(line); block != nil; block, tip = matchNewBlock(line) {
+	for block := matchNewBlock(line); block != nil; block = matchNewBlock(line) {
 		ctx.AddChild(block)
-		ctx.SetTip(tip)
+		ctx.SetTip(block)
         if ctx.Tip.IsLeaf() {
             break
         }

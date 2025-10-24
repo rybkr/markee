@@ -2,24 +2,25 @@ package ast
 
 type Node interface {
 	Type() NodeType
-    IsLeaf() bool
-    IsContainer() bool
-    IsBlock() bool
-    IsInline() bool
+	IsLeaf() bool
+	IsContainer() bool
+	IsBlock() bool
+	IsInline() bool
 	Parent() Node
 	SetParent(Node)
 	Children() []Node
+    LastChild() Node
 	AddChild(Node)
-    IsOpen() bool
-    SetOpen(bool)
-	Accept(Visitor) VisitStatus
+	IsOpen() bool
+	SetOpen(bool)
+	Accept(Visitor)
 }
 
 type BaseNode struct {
 	nodeType NodeType
 	parent   Node
 	children []Node
-    isOpen   bool
+	isOpen   bool
 }
 
 func New(t NodeType) BaseNode {
@@ -27,7 +28,7 @@ func New(t NodeType) BaseNode {
 		nodeType: t,
 		parent:   nil,
 		children: make([]Node, 0),
-        isOpen:   false,
+		isOpen:   false,
 	}
 }
 
@@ -36,19 +37,19 @@ func (n *BaseNode) Type() NodeType {
 }
 
 func (n *BaseNode) IsLeaf() bool {
-    return n.Type() >= nodeLeafStart && n.Type() <= nodeLeafEnd
+	return n.Type() >= nodeLeafStart && n.Type() <= nodeLeafEnd
 }
 
 func (n *BaseNode) IsContainer() bool {
-    return n.Type() >= nodeContainerStart && n.Type() <= nodeContainerEnd
+	return n.Type() >= nodeContainerStart && n.Type() <= nodeContainerEnd
 }
 
 func (n *BaseNode) IsBlock() bool {
-    return n.Type() >= nodeBlockStart && n.Type() <= nodeBlockEnd
+	return n.Type() >= nodeBlockStart && n.Type() <= nodeBlockEnd
 }
 
 func (n *BaseNode) IsInline() bool {
-    return n.Type() >= nodeInlineStart && n.Type() <= nodeInlineEnd
+	return n.Type() >= nodeInlineStart && n.Type() <= nodeInlineEnd
 }
 
 func (n *BaseNode) Parent() Node {
@@ -63,113 +64,27 @@ func (n *BaseNode) Children() []Node {
 	return n.children
 }
 
+func (n *BaseNode) LastChild() Node {
+    if children := n.Children(); len(children) != 0 {
+        return children[len(children)-1]
+    }
+    return nil
+}
+
 func (n *BaseNode) AddChild(child Node) {
 	child.SetParent(n)
 	n.children = append(n.children, child)
 }
 
 func (n *BaseNode) IsOpen() bool {
-    return n.isOpen
+	return n.isOpen
 }
 
 func (n *BaseNode) SetOpen(isOpen bool) {
-    n.isOpen = isOpen
+	n.isOpen = isOpen
 }
 
-func (n *BaseNode) Accept(v Visitor) VisitStatus {
-	var status VisitStatus = VisitStop
-
-	switch n.Type() {
-	case NodeDocument:
-		status = v.VisitDocument(n)
-	case NodeBlockQuote:
-		status = v.VisitBlockQuote(n)
-	case NodeList:
-		status = v.VisitList(n)
-	case NodeListItem:
-		status = v.VisitListItem(n)
-	case NodeCodeBlock:
-		status = v.VisitCodeBlock(n)
-	case NodeHTMLBlock:
-		status = v.VisitHTMLBlock(n)
-	case NodeThematicBreak:
-		status = v.VisitThematicBreak(n)
-	case NodeHeading:
-		status = v.VisitHeading(n)
-	case NodeParagraph:
-		status = v.VisitParagraph(n)
-	case NodeCodeSpan:
-		status = v.VisitCodeSpan(n)
-	case NodeHTMLSpan:
-		status = v.VisitHTMLSpan(n)
-	case NodeEmphasis:
-		status = v.VisitEmphasis(n)
-	case NodeStrong:
-		status = v.VisitStrong(n)
-	case NodeLink:
-		status = v.VisitLink(n)
-	case NodeImage:
-		status = v.VisitImage(n)
-	case NodeSoftBreak:
-		status = v.VisitSoftBreak(n)
-	case NodeLineBreak:
-		status = v.VisitLineBreak(n)
-	case NodeContent:
-		status = v.VisitContent(n)
-	}
-
-	switch status {
-    case VisitLastChild:
-        if children := n.Children(); len(children) > 0 {
-            lastChild := children[len(children)-1]
-            return lastChild.Accept(v)
-        }
-    case VisitChildrenDFS:
-        for _, child := range n.Children() {
-            child.Accept(v)
-        }
-        switch n.Type() {
-        case NodeDocument:
-            v.LeaveDocument(n)
-        case NodeBlockQuote:
-            v.LeaveBlockQuote(n)
-        case NodeList:
-            v.LeaveList(n)
-        case NodeListItem:
-            v.LeaveListItem(n)
-        case NodeCodeBlock:
-            v.LeaveCodeBlock(n)
-        case NodeHTMLBlock:
-            v.LeaveHTMLBlock(n)
-        case NodeThematicBreak:
-            v.LeaveThematicBreak(n)
-        case NodeHeading:
-            v.LeaveHeading(n)
-        case NodeParagraph:
-            v.LeaveParagraph(n)
-        case NodeCodeSpan:
-            v.LeaveCodeSpan(n)
-        case NodeHTMLSpan:
-            v.LeaveHTMLSpan(n)
-        case NodeEmphasis:
-            v.LeaveEmphasis(n)
-        case NodeStrong:
-            v.LeaveStrong(n)
-        case NodeLink:
-            v.LeaveLink(n)
-        case NodeImage:
-            v.LeaveImage(n)
-        case NodeSoftBreak:
-            v.LeaveSoftBreak(n)
-        case NodeLineBreak:
-            v.LeaveLineBreak(n)
-        case NodeContent:
-            v.LeaveContent(n)
-        }
-	}
-
-    return VisitStop
-}
+func (n *BaseNode) Accept(v Visitor) { return }
 
 type NodeType int
 

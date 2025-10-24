@@ -8,12 +8,20 @@ func NewDocument() *Document {
 	}
 }
 
+func (d *Document) Accept(v Visitor) {
+    v.VisitDocument(d)
+}
+
 type BlockQuote struct{ BaseNode }
 
 func NewBlockQuote() *BlockQuote {
 	return &BlockQuote{
 		BaseNode: New(NodeBlockQuote),
 	}
+}
+
+func (b *BlockQuote) Accept(v Visitor) {
+    v.VisitBlockQuote(b)
 }
 
 type List struct {
@@ -33,6 +41,10 @@ func NewList(isOrdered bool) *List {
 	}
 }
 
+func (l *List) Accept(v Visitor) {
+    v.VisitList(l)
+}
+
 type ListItem struct {
 	BaseNode
 	Indent int
@@ -43,6 +55,10 @@ func NewListItem(indent int) *ListItem {
 		BaseNode: New(NodeListItem),
 		Indent:   indent,
 	}
+}
+
+func (l *ListItem) Accept(v Visitor) {
+    v.VisitListItem(l)
 }
 
 type CodeBlock struct {
@@ -59,6 +75,10 @@ func NewCodeBlock(isFenced bool) *CodeBlock {
 	}
 }
 
+func (c *CodeBlock) Accept(v Visitor) {
+    v.VisitCodeBlock(c)
+}
+
 type HTMLBlock struct {
 	BaseNode
 	Literal string
@@ -71,12 +91,20 @@ func NewHTMLBlock(literal string) *HTMLBlock {
 	}
 }
 
+func (h *HTMLBlock) Accept(v Visitor) {
+    v.VisitHTMLBlock(h)
+}
+
 type ThematicBreak struct{ BaseNode }
 
 func NewThematicBreak() *ThematicBreak {
 	return &ThematicBreak{
 		BaseNode: New(NodeThematicBreak),
 	}
+}
+
+func (t *ThematicBreak) Accept(v Visitor) {
+    v.VisitThematicBreak(t)
 }
 
 type Heading struct {
@@ -91,10 +119,18 @@ func NewHeading(level int) *Heading {
 	}
 }
 
+func (h *Heading) Accept(v Visitor) {
+    v.VisitHeading(h)
+}
+
 type Paragraph struct{ BaseNode }
 
 func NewParagraph() *Paragraph {
 	return &Paragraph{
 		BaseNode: New(NodeParagraph),
 	}
+}
+
+func (p *Paragraph) Accept(v Visitor) {
+    v.VisitParagraph(p)
 }

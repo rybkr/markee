@@ -24,41 +24,41 @@ func (r *HTMLRenderer) Render(doc *ast.Document) string {
     return r.output.String()
 }
 
-func (r *HTMLRenderer) VisitDocument(node ast.Node) ast.VisitStatus {
-    return ast.VisitChildrenDFS
+func (r *HTMLRenderer) VisitDocument(node ast.Node) {
+    for _, child := range node.Children() {
+        child.Accept(r)
+    }
 }
 
-func (r *HTMLRenderer) VisitBlockQuote(node ast.Node) ast.VisitStatus {
+func (r *HTMLRenderer) VisitBlockQuote(node ast.Node) {
     r.output.WriteString("<blockquote>\n")
-    return ast.VisitChildrenDFS
+    for _, child := range node.Children() {
+        child.Accept(r)
+    }
+    r.output.WriteString("</blockquote>\n")
 }
 
-func (r *HTMLRenderer) LeaveBlockQuote(node ast.Node) {
-    r.output.WriteString("</blockquote>")
-}
-
-func (r *HTMLRenderer) VisitHeading(node ast.Node) ast.VisitStatus {
+func (r *HTMLRenderer) VisitHeading(node ast.Node) {
     r.output.WriteString("<h1>")
-    return ast.VisitChildrenDFS
-}
-
-func (r *HTMLRenderer) LeaveHeading(node ast.Node) {
+    for _, child := range node.Children() {
+        child.Accept(r)
+    }
     r.output.WriteString("</h1>\n")
 }
 
-func (r *HTMLRenderer) VisitParagraph(node ast.Node) ast.VisitStatus {
+func (r *HTMLRenderer) VisitParagraph(node ast.Node) {
     r.output.WriteString("<p>")
-    return ast.VisitChildrenDFS
-}
-
-func (r *HTMLRenderer) LeaveParagraph(node ast.Node) {
+    for _, child := range node.Children() {
+        child.Accept(r)
+    }
     r.output.WriteString("</p>\n")
 }
 
-func (r *HTMLRenderer) VisitContent(node ast.Node) ast.VisitStatus {
+func (r *HTMLRenderer) VisitContent(node ast.Node) {
     if content, ok := node.(*ast.Content); ok {
         r.output.WriteString(content.Literal)
-        return ast.VisitChildrenDFS
+        for _, child := range node.Children() {
+            child.Accept(r)
+        }
     }
-    return ast.VisitStop
 }
