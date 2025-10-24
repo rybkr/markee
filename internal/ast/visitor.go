@@ -19,6 +19,25 @@ type Visitor interface {
 	VisitSoftBreak(node Node) VisitStatus
 	VisitLineBreak(node Node) VisitStatus
 	VisitContent(node Node) VisitStatus
+
+	LeaveDocument(node Node)
+	LeaveBlockQuote(node Node)
+	LeaveList(node Node)
+	LeaveListItem(node Node)
+	LeaveCodeBlock(node Node)
+	LeaveHTMLBlock(node Node)
+	LeaveThematicBreak(node Node)
+	LeaveHeading(node Node)
+	LeaveParagraph(node Node)
+	LeaveCodeSpan(node Node)
+	LeaveHTMLSpan(node Node)
+	LeaveEmphasis(node Node)
+	LeaveStrong(node Node)
+	LeaveLink(node Node)
+	LeaveImage(node Node)
+	LeaveSoftBreak(node Node)
+	LeaveLineBreak(node Node)
+	LeaveContent(node Node)
 }
 
 type BaseVisitor struct{}
@@ -42,10 +61,29 @@ func (v *BaseVisitor) VisitSoftBreak(node Node) VisitStatus     { return VisitSt
 func (v *BaseVisitor) VisitLineBreak(node Node) VisitStatus     { return VisitStop }
 func (v *BaseVisitor) VisitContent(node Node) VisitStatus       { return VisitStop }
 
+func (v *BaseVisitor) LeaveDocument(node Node)      { return }
+func (v *BaseVisitor) LeaveBlockQuote(node Node)    { return }
+func (v *BaseVisitor) LeaveList(node Node)          { return }
+func (v *BaseVisitor) LeaveListItem(node Node)      { return }
+func (v *BaseVisitor) LeaveCodeBlock(node Node)     { return }
+func (v *BaseVisitor) LeaveHTMLBlock(node Node)     { return }
+func (v *BaseVisitor) LeaveThematicBreak(node Node) { return }
+func (v *BaseVisitor) LeaveHeading(node Node)       { return }
+func (v *BaseVisitor) LeaveParagraph(node Node)     { return }
+func (v *BaseVisitor) LeaveCodeSpan(node Node)      { return }
+func (v *BaseVisitor) LeaveHTMLSpan(node Node)      { return }
+func (v *BaseVisitor) LeaveEmphasis(node Node)      { return }
+func (v *BaseVisitor) LeaveStrong(node Node)        { return }
+func (v *BaseVisitor) LeaveLink(node Node)          { return }
+func (v *BaseVisitor) LeaveImage(node Node)         { return }
+func (v *BaseVisitor) LeaveSoftBreak(node Node)     { return }
+func (v *BaseVisitor) LeaveLineBreak(node Node)     { return }
+func (v *BaseVisitor) LeaveContent(node Node)       { return }
+
 type VisitStatus int
 
 const (
 	VisitStop VisitStatus = iota
-    VisitLastChild
-    VisitChildrenDFS
+	VisitLastChild
+	VisitChildrenDFS
 )

@@ -97,3 +97,21 @@ func NewContent(literal string) *Content {
 		Literal:  literal,
 	}
 }
+
+func (c *Content) Accept(v Visitor) VisitStatus {
+    status := v.VisitContent(c)
+    
+	switch status {
+    case VisitLastChild:
+        if children := c.Children(); len(children) > 0 {
+            lastChild := children[len(children)-1]
+            return lastChild.Accept(v)
+        }
+    case VisitChildrenDFS:
+        for _, child := range c.Children() {
+            child.Accept(v)
+        }
+	}
+
+    return VisitStop
+}

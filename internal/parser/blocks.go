@@ -62,10 +62,7 @@ func matchATXHeading(line *Line) *ast.Heading {
 	reATXHeading := regexp.MustCompile(`^(#{1,6})[ \t]*(.*?)(?:[ \t]+#*)?[ \t]*$`)
 	if matches := reATXHeading.FindStringSubmatch(line.Content); matches != nil {
 		level := len(matches[1])
-		heading := ast.NewHeading(level)
-		content := ast.NewContent(strings.TrimSpace(matches[2]))
-		heading.AddChild(content)
-		return heading
+		return ast.NewHeading(level)
 	}
 	return nil
 }

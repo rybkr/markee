@@ -128,6 +128,44 @@ func (n *BaseNode) Accept(v Visitor) VisitStatus {
         for _, child := range n.Children() {
             child.Accept(v)
         }
+        switch n.Type() {
+        case NodeDocument:
+            v.LeaveDocument(n)
+        case NodeBlockQuote:
+            v.LeaveBlockQuote(n)
+        case NodeList:
+            v.LeaveList(n)
+        case NodeListItem:
+            v.LeaveListItem(n)
+        case NodeCodeBlock:
+            v.LeaveCodeBlock(n)
+        case NodeHTMLBlock:
+            v.LeaveHTMLBlock(n)
+        case NodeThematicBreak:
+            v.LeaveThematicBreak(n)
+        case NodeHeading:
+            v.LeaveHeading(n)
+        case NodeParagraph:
+            v.LeaveParagraph(n)
+        case NodeCodeSpan:
+            v.LeaveCodeSpan(n)
+        case NodeHTMLSpan:
+            v.LeaveHTMLSpan(n)
+        case NodeEmphasis:
+            v.LeaveEmphasis(n)
+        case NodeStrong:
+            v.LeaveStrong(n)
+        case NodeLink:
+            v.LeaveLink(n)
+        case NodeImage:
+            v.LeaveImage(n)
+        case NodeSoftBreak:
+            v.LeaveSoftBreak(n)
+        case NodeLineBreak:
+            v.LeaveLineBreak(n)
+        case NodeContent:
+            v.LeaveContent(n)
+        }
 	}
 
     return VisitStop
