@@ -18,14 +18,18 @@ func matchNewBlock(line *Line) ast.Node {
 		return heading
 	}
 
-    if blockquote := matchBlockQuote(line); blockquote != nil {
+    if blockQuote := matchBlockQuote(line); blockQuote != nil {
         line.Consume(1)
         line.ConsumeWhitespace()
-        return blockquote
+        return blockQuote
     }
 
     if paragraph := matchParagraph(line); paragraph != nil {
         return paragraph
+    }
+
+    if blankLine := matchBlankLine(line); blankLine != nil {
+        return blankLine
     }
 
 	return nil
@@ -55,15 +59,24 @@ func matchThematicBreak(line *Line) *ast.ThematicBreak {
 // See: https://spec.commonmark.org/0.31.2/#atx-headings
 func matchATXHeading(line *Line) *ast.Heading {
 	//      (#{1,6}) : opening sequence of 1-6 '#' characters
-	//        [ \t]* : optional space/tab after '#' sequence, needed if heading has content
-	//         (.*?) : capture content lazily as to not eat trailing hashes
+	//        [ \t]+ : space/tab after '#' sequence, needed if heading has content
+	//      ([^#]*?) : capture content lazily as to not eat trailing hashes
 	// (?:[ \t]+#*)? : optional closing '#' sequence, preceded by as least one space/tab
 	//        [ \t]* : optional space/tab at the end
-	reATXHeading := regexp.MustCompile(`^(#{1,6})[ \t]*(.*?)(?:[ \t]+#*)?[ \t]*$`)
+	reATXHeading := regexp.MustCompile(`^(#{1,6})[ \t]+([^#]*?)(?:[ \t]+#*)?[ \t]*$`)
 	if matches := reATXHeading.FindStringSubmatch(line.Content); matches != nil {
 		level := len(matches[1])
 		return ast.NewHeading(level)
 	}
+
+    // Alternative pattern for empty headings, does not need space after `#` sequence
+    reATXHeadingEmpty := regexp.MustCompile(`^(#{1,6})[ \t]*(?:[ \t]+#*)?[ \t]*$`)
+    if matches := reATXHeadingEmpty.FindStringSubmatch(line.Content); matches != nil {
+        line.ConsumeAll()
+        level := len(matches[1])
+        return ast.NewHeading(level)
+    }
+    
 	return nil
 }
 
@@ -83,6 +96,14 @@ func matchBlockQuote(line *Line) *ast.BlockQuote {
 func matchParagraph(line *Line) *ast.Paragraph {
     if !line.IsBlank {
         return ast.NewParagraph()
+    }
+    return nil
+}
+
+// See: https://spec.commonmark.org/0.31.2/#blank-lines
+func matchBlankLine(line *Line) *ast.BlankLine {
+    if line.IsBlank {
+        return ast.NewBlankLine()
     }
     return nil
 }

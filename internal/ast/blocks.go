@@ -9,7 +9,7 @@ func NewDocument() *Document {
 }
 
 func (d *Document) Accept(v Visitor) {
-    v.VisitDocument(d)
+	v.VisitDocument(d)
 }
 
 type BlockQuote struct{ BaseNode }
@@ -21,7 +21,7 @@ func NewBlockQuote() *BlockQuote {
 }
 
 func (b *BlockQuote) Accept(v Visitor) {
-    v.VisitBlockQuote(b)
+	v.VisitBlockQuote(b)
 }
 
 type List struct {
@@ -42,7 +42,7 @@ func NewList(isOrdered bool) *List {
 }
 
 func (l *List) Accept(v Visitor) {
-    v.VisitList(l)
+	v.VisitList(l)
 }
 
 type ListItem struct {
@@ -58,7 +58,7 @@ func NewListItem(indent int) *ListItem {
 }
 
 func (l *ListItem) Accept(v Visitor) {
-    v.VisitListItem(l)
+	v.VisitListItem(l)
 }
 
 type CodeBlock struct {
@@ -76,7 +76,7 @@ func NewCodeBlock(isFenced bool) *CodeBlock {
 }
 
 func (c *CodeBlock) Accept(v Visitor) {
-    v.VisitCodeBlock(c)
+	v.VisitCodeBlock(c)
 }
 
 type HTMLBlock struct {
@@ -92,7 +92,7 @@ func NewHTMLBlock(literal string) *HTMLBlock {
 }
 
 func (h *HTMLBlock) Accept(v Visitor) {
-    v.VisitHTMLBlock(h)
+	v.VisitHTMLBlock(h)
 }
 
 type ThematicBreak struct{ BaseNode }
@@ -104,7 +104,7 @@ func NewThematicBreak() *ThematicBreak {
 }
 
 func (t *ThematicBreak) Accept(v Visitor) {
-    v.VisitThematicBreak(t)
+	v.VisitThematicBreak(t)
 }
 
 type Heading struct {
@@ -120,7 +120,7 @@ func NewHeading(level int) *Heading {
 }
 
 func (h *Heading) Accept(v Visitor) {
-    v.VisitHeading(h)
+	v.VisitHeading(h)
 }
 
 type Paragraph struct{ BaseNode }
@@ -132,5 +132,17 @@ func NewParagraph() *Paragraph {
 }
 
 func (p *Paragraph) Accept(v Visitor) {
-    v.VisitParagraph(p)
+	v.VisitParagraph(p)
+}
+
+type BlankLine struct{ BaseNode }
+
+func NewBlankLine() *BlankLine {
+	return &BlankLine{
+		BaseNode: New(NodeBlankLine),
+	}
+}
+
+func (b *BlankLine) Accept(v Visitor) {
+	v.VisitBlankLine(b)
 }

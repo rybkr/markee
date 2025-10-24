@@ -103,6 +103,7 @@ const (
 	NodeThematicBreak
 	NodeHeading
 	NodeParagraph
+    NodeBlankLine
 
 	// Inlines are parsed horizontally from a one-line string.
 	// See: https://spec.commonmark.org/0.31.2/#inlines
@@ -121,9 +122,9 @@ const (
 	nodeContainerStart = NodeDocument
 	nodeContainerEnd   = NodeListItem
 	nodeLeafStart      = NodeCodeBlock
-	nodeLeafEnd        = NodeParagraph
+	nodeLeafEnd        = NodeBlankLine
 	nodeBlockStart     = NodeDocument
-	nodeBlockEnd       = NodeParagraph
+	nodeBlockEnd       = NodeBlankLine
 	nodeInlineStart    = NodeCodeSpan
 	nodeInlineEnd      = NodeContent
 )

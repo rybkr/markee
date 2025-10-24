@@ -10,6 +10,7 @@ type Visitor interface {
 	VisitThematicBreak(node Node)
 	VisitHeading(node Node)
 	VisitParagraph(node Node)
+    VisitBlankLine(node Node)
 	VisitCodeSpan(node Node)
 	VisitHTMLSpan(node Node)
 	VisitEmphasis(node Node)
@@ -32,6 +33,7 @@ func (v *BaseVisitor) VisitHTMLBlock(node Node)     {}
 func (v *BaseVisitor) VisitThematicBreak(node Node) {}
 func (v *BaseVisitor) VisitHeading(node Node)       {}
 func (v *BaseVisitor) VisitParagraph(node Node)     {}
+func (v *BaseVisitor) VisitBlankLine(node Node)     {}
 func (v *BaseVisitor) VisitCodeSpan(node Node)      {}
 func (v *BaseVisitor) VisitHTMLSpan(node Node)      {}
 func (v *BaseVisitor) VisitEmphasis(node Node)      {}
