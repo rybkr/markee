@@ -73,3 +73,7 @@ func (r *HTMLRenderer) VisitContent(node ast.Node) {
         }
     }
 }
+
+func (r *HTMLRenderer) VisitThematicBreak(node ast.Node) {
+    r.output.WriteString("<hr />\n")
+}

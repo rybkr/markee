@@ -1,4 +1,3 @@
-~~~py
-def init(__self__):
-    pass
-~~~
+**
+__
+__
