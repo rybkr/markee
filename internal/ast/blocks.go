@@ -63,9 +63,9 @@ func (l *ListItem) Accept(v Visitor) {
 
 type CodeBlock struct {
 	BaseNode
-	Language string
-	IsFenced bool
-	Literal  string
+	Language  string
+	IsFenced  bool
+	FenceChar byte
 }
 
 func NewCodeBlock(isFenced bool) *CodeBlock {

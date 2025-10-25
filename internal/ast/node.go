@@ -10,6 +10,7 @@ type Node interface {
 	SetParent(Node)
 	Children() []Node
     LastChild() Node
+    NextSibling() Node
 	AddChild(Node)
 	IsOpen() bool
 	SetOpen(bool)
@@ -68,6 +69,10 @@ func (n *BaseNode) LastChild() Node {
     if children := n.Children(); len(children) != 0 {
         return children[len(children)-1]
     }
+    return nil
+}
+
+func (n *BaseNode) NextSibling() Node {
     return nil
 }
 
