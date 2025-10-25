@@ -100,9 +100,14 @@ func (e *BlockExtender) VisitHeading(node ast.Node) {
 }
 
 func (e *BlockExtender) VisitParagraph(node ast.Node) {
+    if !node.IsOpen() {
+        return
+    }
 	if !e.line.IsBlank {
 		e.lastMatch = node
         e.allMatched = append(e.allMatched, node)
         ast.WalkLastChild(e, node)
-	}
+	} else {
+        node.SetOpen(false)
+    }
 }

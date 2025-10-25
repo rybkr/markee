@@ -12,6 +12,8 @@ type Node interface {
     SetLastChild(Node)
     Children() []Node
 	AddChild(Node)
+    IsOpen() bool
+    SetOpen(bool)
 	Accept(Visitor)
 }
 
@@ -21,6 +23,7 @@ type BaseNode struct {
 	lastChild   Node
 	nextSibling Node
 	nodeType    NodeType
+    isOpen      bool
 }
 
 func New(t NodeType) BaseNode {
@@ -30,6 +33,7 @@ func New(t NodeType) BaseNode {
 		lastChild:   nil,
 		nextSibling: nil,
 		nodeType:    t,
+        isOpen:      true,
 	}
 }
 
@@ -93,6 +97,14 @@ func (n *BaseNode) AddChild(child Node) {
     if firstChild := n.FirstChild(); firstChild == nil {
         n.SetFirstChild(child)
     }
+}
+
+func (n *BaseNode) IsOpen() bool {
+    return n.isOpen
+}
+
+func (n *BaseNode) SetOpen(isOpen bool) {
+    n.isOpen = isOpen
 }
 
 func (n *BaseNode) Accept(v Visitor) {
