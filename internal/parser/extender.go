@@ -50,16 +50,22 @@ func (e *BlockExtender) VisitListItem(node ast.Node) {
 }
 
 func (e *BlockExtender) VisitCodeBlock(node ast.Node) {
-    if codeBlock, ok := node.(*ast.CodeBlock); ok {
-        if codeBlock.IsFenced {
-
-        } else {
-            if e.line.IsBlank || e.line.Indent >= 4 {
-                e.lastMatch = node
+	if codeBlock, ok := node.(*ast.CodeBlock); ok {
+		if codeBlock.IsFenced {
+			if e.line.Peek(0) != codeBlock.FenceChar ||
+				e.line.Peek(1) != codeBlock.FenceChar ||
+				e.line.Peek(2) != codeBlock.FenceChar {
+				e.lastMatch = node
+			} else {
                 e.line.ConsumeAll()
-            }
-        }
-    }
+			}
+		} else {
+			if e.line.IsBlank || e.line.Indent >= 4 {
+				e.lastMatch = node
+				e.line.ConsumeAll()
+			}
+		}
+	}
 }
 
 func (e *BlockExtender) VisitHTMLBlock(node ast.Node) {

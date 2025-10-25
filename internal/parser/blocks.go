@@ -7,6 +7,10 @@ import (
 )
 
 func matchNewBlock(line *Line) ast.Node {
+    if blockQuote := matchBlockQuote(line); blockQuote != nil {
+        return blockQuote
+    }
+
 	if thematicBreak := matchThematicBreak(line); thematicBreak != nil {
 		line.ConsumeAll()
 		return thematicBreak
@@ -18,13 +22,7 @@ func matchNewBlock(line *Line) ast.Node {
 		return heading
 	}
 
-    if blockQuote := matchBlockQuote(line); blockQuote != nil {
-        line.Consume(1)
-        line.ConsumeWhitespace()
-        return blockQuote
-    }
-
-    if codeBlock := matchCodeBlock(line); codeBlock != nil {
+    if codeBlock := matchFencedCodeBlock(line); codeBlock != nil {
         return codeBlock
     }
 
@@ -62,16 +60,16 @@ func matchThematicBreak(line *Line) *ast.ThematicBreak {
 
 // See: https://spec.commonmark.org/0.31.2/#atx-headings
 func matchATXHeading(line *Line) *ast.Heading {
-	//      (#{1,6}) : opening sequence of 1-6 '#' characters
-	//        [ \t]+ : space/tab after '#' sequence, needed if heading has content
-	//      ([^#]*?) : capture content lazily as to not eat trailing hashes
-	// (?:[ \t]+#*)? : optional closing '#' sequence, preceded by as least one space/tab
-	//        [ \t]* : optional space/tab at the end
-	reATXHeading := regexp.MustCompile(`^(#{1,6})[ \t]+([^#]*?)(?:[ \t]+#*)?[ \t]*$`)
-	if matches := reATXHeading.FindStringSubmatch(line.Content); matches != nil {
-		level := len(matches[1])
-		return ast.NewHeading(level)
-	}
+    //      (#{1,6}) : opening sequence of 1-6 '#' characters
+    //        [ \t]+ : space/tab after '#' sequence, needed if heading has content
+    //      ([^#]*?) : capture content lazily as to not eat trailing hashes
+    // (?:[ \t]+#*)? : optional closing '#' sequence, preceded by as least one space/tab
+    //        [ \t]* : optional space/tab at the end
+    reATXHeading := regexp.MustCompile(`^(#{1,6})[ \t]+([^#]*?)(?:[ \t]+#*)?[ \t]*$`)
+    if matches := reATXHeading.FindStringSubmatch(line.Content); matches != nil {
+        level := len(matches[1])
+        return ast.NewHeading(level)
+    }
 
     // Alternative pattern for empty headings, does not need space after `#` sequence
     reATXHeadingEmpty := regexp.MustCompile(`^(#{1,6})[ \t]*(?:[ \t]+#*)?[ \t]*$`)
@@ -80,17 +78,15 @@ func matchATXHeading(line *Line) *ast.Heading {
         level := len(matches[1])
         return ast.NewHeading(level)
     }
-    
+
 	return nil
 }
 
 // See: https://spec.commonmark.org/0.31.2/#block-quotes
 func matchBlockQuote(line *Line) *ast.BlockQuote {
-    //      > : block quote marker
-    // [ \t]? : optional single space or tab after '>'
-    //   (.*) : capture content of the line
-    reBlockQuote := regexp.MustCompile(`^>[ \t]?(.*)$`)
-    if matches := reBlockQuote.FindStringSubmatch(line.Content); matches != nil {
+    if line.Peek(0) == '>' {
+        line.Consume(1)
+        line.ConsumeWhitespace()
         return ast.NewBlockQuote()
     }
     return nil
@@ -113,10 +109,22 @@ func matchBlankLine(line *Line) *ast.BlankLine {
 }
 
 // See: https://spec.commonmark.org/0.31.2/#indented-code-blocks
-// See: https://spec.commonmark.org/0.31.2/#fenced-code-blocks
-func matchCodeBlock(line *Line) *ast.CodeBlock {
+func matchIndentedCodeBlock(line *Line) *ast.CodeBlock {
     if line.Indent >= 4 {
         return ast.NewCodeBlock(false)
+    }
+    return nil
+}
+
+// See: https://spec.commonmark.org/0.31.2/#fenced-code-blocks
+func matchFencedCodeBlock(line *Line) *ast.CodeBlock {
+    reCodeFence := regexp.MustCompile("^(`{3,}|^~{3,})[ \\t]*([^ \\t\\n]+)?")
+    if matches := reCodeFence.FindStringSubmatch(line.Content); matches != nil {
+        codeBlock := ast.NewCodeBlock(true)
+        codeBlock.FenceChar = matches[1][0]
+        codeBlock.Language = matches[2]
+        line.ConsumeAll()
+        return codeBlock
     }
     return nil
 }
