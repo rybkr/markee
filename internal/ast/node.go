@@ -116,7 +116,6 @@ const (
 	NodeThematicBreak
 	NodeHeading
 	NodeParagraph
-	NodeBlankLine
 
 	// Inlines are parsed horizontally from a one-line string.
 	// See: https://spec.commonmark.org/0.31.2/#inlines
@@ -132,7 +131,7 @@ const (
 )
 
 func (t NodeType) IsLeaf() bool {
-	return t >= NodeCodeBlock && t <= NodeBlankLine
+	return t >= NodeCodeBlock && t <= NodeParagraph
 }
 
 func (t NodeType) IsContainer() bool {

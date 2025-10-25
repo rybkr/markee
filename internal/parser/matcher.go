@@ -117,14 +117,6 @@ func matchParagraph(line *Line) ast.Node {
 	return nil
 }
 
-// See: https://spec.commonmark.org/0.31.2/#blank-lines
-func matchBlankLine(line *Line) ast.Node {
-	if line.IsBlank {
-		return ast.NewBlankLine()
-	}
-	return nil
-}
-
 // See: https://spec.commonmark.org/0.31.2/#indented-code-blocks
 func matchIndentedCodeBlock(line *Line) ast.Node {
 	if line.Indent >= 4 {

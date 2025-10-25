@@ -134,15 +134,3 @@ func NewParagraph() *Paragraph {
 func (p *Paragraph) Accept(v Visitor) {
 	v.VisitParagraph(p)
 }
-
-type BlankLine struct{ BaseNode }
-
-func NewBlankLine() *BlankLine {
-	return &BlankLine{
-		BaseNode: New(NodeBlankLine),
-	}
-}
-
-func (b *BlankLine) Accept(v Visitor) {
-	v.VisitBlankLine(b)
-}

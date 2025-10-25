@@ -116,6 +116,3 @@ func (e *BlockExtender) VisitParagraph(node ast.Node) {
 		}
 	}
 }
-
-func (e *BlockExtender) VisitBlankLine(node ast.Node) {
-}
