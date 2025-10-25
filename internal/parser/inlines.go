@@ -176,7 +176,6 @@ func (p *InlineParser) parseBackticks() {
 					code = code[1 : len(code)-1]
 				}
 
-				// Collapse whitespace
 				code = collapseWhitespace(code)
 
 				p.container.AddChild(ast.NewCodeSpan(code))
