@@ -32,7 +32,9 @@ func incorporateLine(ctx *Context, line *Line) {
 	// We cannot close unmatched blocks yet because we may have a lazy continuation line.
 	extender := NewBlockExtender(line)
 	ctx.Doc.Accept(extender)
-    ctx.SetTip(extender.LastMatch())
+    lastMatched := extender.LastMatch()
+    ctx.SetTip(lastMatched)
+
 
 	// Second, we should check the line for any tokens that would create new blocks. For example,
 	// if after consuming the extension markers, the line still starts with '>', then we should
@@ -40,17 +42,39 @@ func incorporateLine(ctx *Context, line *Line) {
 	// This logic differs from the extension logic because we need to consider the precedence of
 	// block nodes as defined by CommonMark, rather than the order in which they appear in the AST.
 	// If we find a match, we should close unmatched blocks from the previous step.
-	for block := matchNewBlock(line, ctx.Tip); block != nil; block = matchNewBlock(line, ctx.Tip) {
-		ctx.AddChild(block)
-		ctx.SetTip(block)
-        if ctx.Tip.Type().IsLeaf() {
-            break
-        }
+	var newBlock ast.Node
+	newBlock = matchNewBlock(line, ctx.Tip)
+
+	if newBlock != nil {
+		ctx.CloseUnmatchedBlocks(lastMatched)
+		ctx.AddChild(newBlock)
+		ctx.SetTip(newBlock)
+		if !newBlock.Type().IsLeaf() {
+			for {
+				nextBlock := matchNewBlock(line, ctx.Tip)
+				if nextBlock == nil {
+					break
+				}
+
+				ctx.AddChild(nextBlock)
+				ctx.SetTip(nextBlock)
+
+				if nextBlock.Type().IsLeaf() {
+					break
+				}
+			}
+		}
+	} else {
+		ctx.SetTip(lastMatched)
 	}
 
-    // Next, we look at the rest fo the line and incorporate the content into the last open block.
-    if !line.IsEmpty() {
+	// Next, we look at the rest fo the line and incorporate the content into the last open block.
+    if !line.IsEmpty() && ctx.Tip.Type() != ast.NodeCodeBlock {
         content := ast.NewContent(strings.TrimSpace(line.Content))
+        ctx.Tip.AddChild(content)
+    } else if !line.IsEmpty() && ctx.Tip.Type() == ast.NodeCodeBlock {
+        // Code blocks accept content differently - preserve exact content
+        content := ast.NewContent(line.Content)
         ctx.Tip.AddChild(content)
     }
 }
