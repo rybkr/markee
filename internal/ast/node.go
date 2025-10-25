@@ -4,16 +4,23 @@ type Node interface {
 	Type() NodeType
 	Parent() Node
 	SetParent(Node)
+
+	PrevSibling() Node
 	NextSibling() Node
-	SetSibling(Node)
+    setPrevSibling(Node)
+    setNextSibling(Node)
+
 	FirstChild() Node
-    SetFirstChild(Node)
 	LastChild() Node
-    SetLastChild(Node)
-    Children() []Node
+	Children() []Node
 	AddChild(Node)
-    IsOpen() bool
-    SetOpen(bool)
+	RemoveChild(Node)
+	InsertAfter(oldNode, newNode Node)
+	ReplaceChild(oldNode, newNode Node)
+
+	IsOpen() bool
+	SetOpen(bool)
+
 	Accept(Visitor)
 }
 
@@ -21,9 +28,10 @@ type BaseNode struct {
 	parent      Node
 	firstChild  Node
 	lastChild   Node
+	prevSibling Node
 	nextSibling Node
 	nodeType    NodeType
-    isOpen      bool
+	isOpen      bool
 }
 
 func New(t NodeType) BaseNode {
@@ -32,8 +40,9 @@ func New(t NodeType) BaseNode {
 		firstChild:  nil,
 		lastChild:   nil,
 		nextSibling: nil,
+		prevSibling: nil,
 		nodeType:    t,
-        isOpen:      true,
+		isOpen:      true,
 	}
 }
 
@@ -49,66 +58,131 @@ func (n *BaseNode) SetParent(node Node) {
 	n.parent = node
 }
 
+func (n *BaseNode) PrevSibling() Node {
+	return n.prevSibling
+}
+
 func (n *BaseNode) NextSibling() Node {
 	return n.nextSibling
 }
 
-func (n *BaseNode) SetSibling(sibling Node) {
-    sibling.SetParent(n.Parent())
-    if nextSibling := n.NextSibling(); nextSibling != nil {
-        sibling.SetSibling(nextSibling)
-    } else {
-        n.Parent().SetLastChild(sibling)
-    }
-	n.nextSibling = sibling
+func (n *BaseNode) setPrevSibling(prev Node) {
+    n.prevSibling = prev
+}
+
+func (n *BaseNode) setNextSibling(next Node) {
+    n.nextSibling = next
 }
 
 func (n *BaseNode) FirstChild() Node {
 	return n.firstChild
 }
 
-func (n *BaseNode) SetFirstChild(child Node) {
-    n.firstChild = child
-}
-
 func (n *BaseNode) LastChild() Node {
 	return n.lastChild
 }
 
-func (n *BaseNode) SetLastChild(child Node) {
-    n.lastChild = child
-}
-
 func (n *BaseNode) Children() []Node {
-    children := make([]Node, 0)
-    for child := n.FirstChild(); child != nil; child = child.NextSibling() {
-        children = append(children, child)
-    }
-    return children
+	children := make([]Node, 0)
+	for child := n.FirstChild(); child != nil; child = child.NextSibling() {
+		children = append(children, child)
+	}
+	return children
 }
 
 func (n *BaseNode) AddChild(child Node) {
 	child.SetParent(n)
-	if lastChild := n.LastChild(); lastChild != nil {
-		lastChild.SetSibling(child)
+
+	if n.lastChild != nil {
+		n.lastChild.setNextSibling(child)
+		child.setPrevSibling(n.lastChild)
+		child.setNextSibling(nil)
+		n.lastChild = child
 	} else {
-        n.SetLastChild(child)
-    }
-    if firstChild := n.FirstChild(); firstChild == nil {
-        n.SetFirstChild(child)
-    }
+		n.firstChild = child
+		n.lastChild = child
+		child.setPrevSibling(nil)
+        child.setNextSibling(nil)
+	}
+}
+
+func (n *BaseNode) RemoveChild(child Node) {
+	if child.Parent() != n {
+		return
+	}
+
+	if child.PrevSibling() != nil {
+		child.PrevSibling().setNextSibling(child.NextSibling())
+	} else {
+		n.firstChild = child.NextSibling()
+	}
+
+	if child.NextSibling() != nil {
+		child.NextSibling().setPrevSibling(child.PrevSibling())
+	} else {
+		n.lastChild = child.PrevSibling()
+	}
+
+	child.SetParent(nil)
+	child.setPrevSibling(nil)
+    child.setNextSibling(nil)
+}
+
+func (n *BaseNode) InsertAfter(oldNode, newNode Node) {
+	if oldNode.Parent() != n {
+		return
+	}
+	newNode.SetParent(n)
+
+	newNode.setPrevSibling(oldNode)
+	newNode.setNextSibling(oldNode.NextSibling())
+
+	if oldNode.NextSibling() != nil {
+		oldNode.NextSibling().setPrevSibling(newNode)
+	} else {
+		n.lastChild = newNode
+	}
+
+	oldNode.setNextSibling(newNode)
+}
+
+func (n *BaseNode) ReplaceChild(oldNode, newNode Node) {
+	if oldNode.Parent() != n {
+		return
+	}
+
+	newNode.SetParent(n)
+
+	newNode.setPrevSibling(oldNode.PrevSibling())
+	newNode.setNextSibling(oldNode.NextSibling())
+
+	if oldNode.PrevSibling() != nil {
+		oldNode.PrevSibling().setNextSibling(newNode)
+	} else {
+		n.firstChild = newNode
+	}
+
+	if oldNode.NextSibling() != nil {
+		oldNode.NextSibling().setPrevSibling(newNode)
+	} else {
+		n.lastChild = newNode
+	}
+
+	oldNode.SetParent(nil)
+	oldNode.setPrevSibling(nil)
+	oldNode.setNextSibling(nil)
 }
 
 func (n *BaseNode) IsOpen() bool {
-    return n.isOpen
+	return n.isOpen
 }
 
 func (n *BaseNode) SetOpen(isOpen bool) {
-    n.isOpen = isOpen
+	n.isOpen = isOpen
 }
 
 func (n *BaseNode) Accept(v Visitor) {
-    // Default no-op
+	// Default no-op
 }
 
 type NodeType int

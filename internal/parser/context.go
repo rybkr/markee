@@ -26,7 +26,7 @@ func (c *Context) SetTip(node ast.Node) {
 }
 
 func (c *Context) CloseUnmatchedBlocks(lastMatched ast.Node) {
-    for c.Tip != lastMatched && c.Tip != nil {
+    for c.Tip != lastMatched && c.Tip != nil && c.Tip.Type() != ast.NodeDocument {
         c.CloseBlock()
     }
 }

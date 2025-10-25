@@ -17,6 +17,11 @@ func Parse(input string) *ast.Document {
 		incorporateLine(ctx, line)
 	}
 
+    ctx.CloseUnmatchedBlocks(ctx.Doc)
+
+    finalizer := NewBlockFinalizer()
+    ctx.Doc.Accept(finalizer)
+
 	return ctx.Doc
 }
 

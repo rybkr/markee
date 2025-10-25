@@ -68,3 +68,15 @@ func (r *HTMLRenderer) VisitContent(node ast.Node) {
 func (r *HTMLRenderer) VisitThematicBreak(node ast.Node) {
     r.output.WriteString("<hr />\n")
 }
+
+func (r *HTMLRenderer) VisitStrong(node ast.Node) {
+    r.output.WriteString("<strong>")
+    ast.WalkChildren(r, node)
+    r.output.WriteString("</strong>")
+}
+
+func (r *HTMLRenderer) VisitEmphasis(node ast.Node) {
+    r.output.WriteString("<em>")
+    ast.WalkChildren(r, node)
+    r.output.WriteString("</em>")
+}
