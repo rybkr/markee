@@ -2,31 +2,34 @@ package ast
 
 type Node interface {
 	Type() NodeType
-	IsLeaf() bool
-	IsContainer() bool
-	IsBlock() bool
-	IsInline() bool
 	Parent() Node
 	SetParent(Node)
-	Children() []Node
-    LastChild() Node
-    NextSibling() Node
+	NextSibling() Node
+	SetSibling(Node)
+	FirstChild() Node
+    SetFirstChild(Node)
+	LastChild() Node
+    SetLastChild(Node)
+    Children() []Node
 	AddChild(Node)
 	Accept(Visitor)
 }
 
 type BaseNode struct {
-	nodeType NodeType
-	parent   Node
-	children []Node
-	isOpen   bool
+	parent      Node
+	firstChild  Node
+	lastChild   Node
+	nextSibling Node
+	nodeType    NodeType
 }
 
 func New(t NodeType) BaseNode {
 	return BaseNode{
-		nodeType: t,
-		parent:   nil,
-		children: make([]Node, 0),
+		parent:      nil,
+		firstChild:  nil,
+		lastChild:   nil,
+		nextSibling: nil,
+		nodeType:    t,
 	}
 }
 
@@ -34,51 +37,67 @@ func (n *BaseNode) Type() NodeType {
 	return n.nodeType
 }
 
-func (n *BaseNode) IsLeaf() bool {
-	return n.Type() >= nodeLeafStart && n.Type() <= nodeLeafEnd
-}
-
-func (n *BaseNode) IsContainer() bool {
-	return n.Type() >= nodeContainerStart && n.Type() <= nodeContainerEnd
-}
-
-func (n *BaseNode) IsBlock() bool {
-	return n.Type() >= nodeBlockStart && n.Type() <= nodeBlockEnd
-}
-
-func (n *BaseNode) IsInline() bool {
-	return n.Type() >= nodeInlineStart && n.Type() <= nodeInlineEnd
-}
-
 func (n *BaseNode) Parent() Node {
 	return n.parent
 }
 
-func (n *BaseNode) SetParent(parent Node) {
-	n.parent = parent
-}
-
-func (n *BaseNode) Children() []Node {
-	return n.children
-}
-
-func (n *BaseNode) LastChild() Node {
-    if children := n.Children(); len(children) != 0 {
-        return children[len(children)-1]
-    }
-    return nil
+func (n *BaseNode) SetParent(node Node) {
+	n.parent = node
 }
 
 func (n *BaseNode) NextSibling() Node {
-    return nil
+	return n.nextSibling
+}
+
+func (n *BaseNode) SetSibling(sibling Node) {
+    sibling.SetParent(n.Parent())
+    if nextSibling := n.NextSibling(); nextSibling != nil {
+        sibling.SetSibling(nextSibling)
+    } else {
+        n.Parent().SetLastChild(sibling)
+    }
+	n.nextSibling = sibling
+}
+
+func (n *BaseNode) FirstChild() Node {
+	return n.firstChild
+}
+
+func (n *BaseNode) SetFirstChild(child Node) {
+    n.firstChild = child
+}
+
+func (n *BaseNode) LastChild() Node {
+	return n.lastChild
+}
+
+func (n *BaseNode) SetLastChild(child Node) {
+    n.lastChild = child
+}
+
+func (n *BaseNode) Children() []Node {
+    children := make([]Node, 0)
+    for child := n.FirstChild(); child != nil; child = child.NextSibling() {
+        children = append(children, child)
+    }
+    return children
 }
 
 func (n *BaseNode) AddChild(child Node) {
 	child.SetParent(n)
-	n.children = append(n.children, child)
+	if lastChild := n.LastChild(); lastChild != nil {
+		lastChild.SetSibling(child)
+	} else {
+        n.SetLastChild(child)
+    }
+    if firstChild := n.FirstChild(); firstChild == nil {
+        n.SetFirstChild(child)
+    }
 }
 
-func (n *BaseNode) Accept(v Visitor) { return }
+func (n *BaseNode) Accept(v Visitor) {
+    // Default no-op
+}
 
 type NodeType int
 
@@ -97,7 +116,7 @@ const (
 	NodeThematicBreak
 	NodeHeading
 	NodeParagraph
-    NodeBlankLine
+	NodeBlankLine
 
 	// Inlines are parsed horizontally from a one-line string.
 	// See: https://spec.commonmark.org/0.31.2/#inlines
@@ -112,13 +131,18 @@ const (
 	NodeContent
 )
 
-const (
-	nodeContainerStart = NodeDocument
-	nodeContainerEnd   = NodeListItem
-	nodeLeafStart      = NodeCodeBlock
-	nodeLeafEnd        = NodeBlankLine
-	nodeBlockStart     = NodeDocument
-	nodeBlockEnd       = NodeBlankLine
-	nodeInlineStart    = NodeCodeSpan
-	nodeInlineEnd      = NodeContent
-)
+func (t NodeType) IsLeaf() bool {
+	return t >= NodeCodeBlock && t <= NodeBlankLine
+}
+
+func (t NodeType) IsContainer() bool {
+	return t >= NodeDocument && t <= NodeListItem
+}
+
+func (t NodeType) IsBlock() bool {
+	return t.IsLeaf() || t.IsContainer()
+}
+
+func (t NodeType) IsInline() bool {
+	return !t.IsBlock()
+}

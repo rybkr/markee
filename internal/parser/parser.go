@@ -43,7 +43,7 @@ func incorporateLine(ctx *Context, line *Line) {
 	for block := matchNewBlock(line); block != nil; block = matchNewBlock(line) {
 		ctx.AddChild(block)
 		ctx.SetTip(block)
-        if ctx.Tip.IsLeaf() {
+        if ctx.Tip.Type().IsLeaf() {
             break
         }
 	}

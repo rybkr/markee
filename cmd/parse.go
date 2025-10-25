@@ -64,9 +64,6 @@ func printTree(node ast.Node, depth int) {
 			ftype = "fenced"
 		}
 		fmt.Printf("%s[CodeBlock %s info=%q]\n", indent, ftype, n.Language)
-		if n.Literal != "" {
-			fmt.Printf("%s  Literal: %q\n", indent, n.Literal)
-		}
 	case *ast.ThematicBreak:
 		fmt.Printf("%s[ThematicBreak]\n", indent)
 	case *ast.List:
