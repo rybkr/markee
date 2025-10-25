@@ -26,51 +26,39 @@ func (r *HTMLRenderer) Render(doc *ast.Document) string {
 }
 
 func (r *HTMLRenderer) VisitDocument(node ast.Node) {
-    for _, child := range node.Children() {
-        child.Accept(r)
-    }
+    ast.WalkChildren(r, node)
 }
 
 func (r *HTMLRenderer) VisitBlockQuote(node ast.Node) {
     r.output.WriteString("<blockquote>\n")
-    for _, child := range node.Children() {
-        child.Accept(r)
-    }
+    ast.WalkChildren(r, node)
     r.output.WriteString("</blockquote>\n")
 }
 
 func (r *HTMLRenderer) VisitCodeBlock(node ast.Node) {
     r.output.WriteString("<pre><code>")
-    for _, child := range node.Children() {
-        child.Accept(r)
-    }
+    ast.WalkChildren(r, node)
     r.output.WriteString("\n</code></pre>\n")
 }
 
 func (r *HTMLRenderer) VisitHeading(node ast.Node) {
     if heading, ok := node.(*ast.Heading); ok {
         r.output.WriteString(fmt.Sprintf("<h%d>", heading.Level))
-        for _, child := range node.Children() {
-            child.Accept(r)
-        }
+        ast.WalkChildren(r, node)
         r.output.WriteString(fmt.Sprintf("</h%d>\n", heading.Level))
     }
 }
 
 func (r *HTMLRenderer) VisitParagraph(node ast.Node) {
     r.output.WriteString("<p>")
-    for _, child := range node.Children() {
-        child.Accept(r)
-    }
+    ast.WalkChildren(r, node)
     r.output.WriteString("</p>\n")
 }
 
 func (r *HTMLRenderer) VisitContent(node ast.Node) {
     if content, ok := node.(*ast.Content); ok {
         r.output.WriteString(content.Literal)
-        for _, child := range node.Children() {
-            child.Accept(r)
-        }
+        ast.WalkChildren(r, node)
     }
 }
 

@@ -41,3 +41,15 @@ func (v *BaseVisitor) VisitImage(node Node)         {}
 func (v *BaseVisitor) VisitSoftBreak(node Node)     {}
 func (v *BaseVisitor) VisitLineBreak(node Node)     {}
 func (v *BaseVisitor) VisitContent(node Node)       {}
+
+func WalkChildren(v Visitor, n Node) {
+    for child := n.FirstChild(); child != nil; child = child.NextSibling() {
+        child.Accept(v)
+    }
+}
+
+func WalkLastChild(v Visitor, n Node) {
+    if child := n.LastChild(); child != nil {
+        child.Accept(v)
+    }
+}

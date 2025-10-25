@@ -30,9 +30,7 @@ func (e *BlockExtender) AllMatched() []ast.Node {
 func (e *BlockExtender) VisitDocument(node ast.Node) {
 	e.lastMatch = node
     e.allMatched = append(e.allMatched, node)
-	if child := node.LastChild(); child != nil {
-		child.Accept(e)
-	}
+    ast.WalkLastChild(e, node)
 }
 
 func (e *BlockExtender) VisitBlockQuote(node ast.Node) {
@@ -43,26 +41,20 @@ func (e *BlockExtender) VisitBlockQuote(node ast.Node) {
         }
 		e.lastMatch = node
         e.allMatched = append(e.allMatched, node)
-		if child := node.LastChild(); child != nil {
-			child.Accept(e)
-		}
+        ast.WalkLastChild(e, node)
 	}
 }
 
 func (e *BlockExtender) VisitList(node ast.Node) {
 	e.lastMatch = node
     e.allMatched = append(e.allMatched, node)
-	if child := node.LastChild(); child != nil {
-		child.Accept(e)
-	}
+    ast.WalkLastChild(e, node)
 }
 
 func (e *BlockExtender) VisitListItem(node ast.Node) {
     e.lastMatch = node
     e.allMatched = append(e.allMatched, node)
-    if child := node.LastChild(); child != nil {
-        child.Accept(e)
-    }
+    ast.WalkLastChild(e, node)
 }
 
 func (e *BlockExtender) VisitCodeBlock(node ast.Node) {
@@ -111,8 +103,6 @@ func (e *BlockExtender) VisitParagraph(node ast.Node) {
 	if !e.line.IsBlank {
 		e.lastMatch = node
         e.allMatched = append(e.allMatched, node)
-		if child := node.LastChild(); child != nil {
-			child.Accept(e)
-		}
+        ast.WalkLastChild(e, node)
 	}
 }
