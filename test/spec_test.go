@@ -8,6 +8,7 @@ import (
 	"markee/internal/renderer"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 )
 
@@ -35,20 +36,27 @@ func loadSpec(t *testing.T) []CommonmarkExample {
 	return examples
 }
 
+func showWhitespace(s string) string {
+	s = strings.ReplaceAll(s, "\t", "→")
+	s = strings.ReplaceAll(s, " ", "‿")
+    s = strings.ReplaceAll(s, "\n", "↓\n")
+    return s
+}
+
 var categoryFilter string
 
 func TestMain(m *testing.M) {
-    flag.StringVar(&categoryFilter, "category", "", "Run only examples from the specified section")
-    flag.Parse()
-    os.Exit(m.Run())
+	flag.StringVar(&categoryFilter, "category", "", "Run only examples from the specified section")
+	flag.Parse()
+	os.Exit(m.Run())
 }
 
 func TestCommonmarkCompliance(t *testing.T) {
 	examples := loadSpec(t)
-    passed, failed := 0, 0
+	passed, failed := 0, 0
 
 	for _, ex := range examples {
-        if categoryFilter != "" && ex.Section != categoryFilter {
+		if categoryFilter != "" && ex.Section != categoryFilter {
 			continue
 		}
 
@@ -59,7 +67,7 @@ func TestCommonmarkCompliance(t *testing.T) {
 
 			if got != ex.HTML {
 				t.Errorf("\x1b[31mexample %d\x1b[0m (%s) mismatch\nMarkdown:\n%s\nExpected:\n%s\nGot:\n%s",
-					ex.Example, ex.Section, ex.Markdown, ex.HTML, got,
+					ex.Example, ex.Section, showWhitespace(ex.Markdown), showWhitespace(ex.HTML), showWhitespace(got),
 				)
 				failed++
 			} else {

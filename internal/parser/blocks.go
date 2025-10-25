@@ -24,6 +24,10 @@ func matchNewBlock(line *Line) ast.Node {
         return blockQuote
     }
 
+    if codeBlock := matchCodeBlock(line); codeBlock != nil {
+        return codeBlock
+    }
+
     if paragraph := matchParagraph(line); paragraph != nil {
         return paragraph
     }
@@ -104,6 +108,15 @@ func matchParagraph(line *Line) *ast.Paragraph {
 func matchBlankLine(line *Line) *ast.BlankLine {
     if line.IsBlank {
         return ast.NewBlankLine()
+    }
+    return nil
+}
+
+// See: https://spec.commonmark.org/0.31.2/#indented-code-blocks
+// See: https://spec.commonmark.org/0.31.2/#fenced-code-blocks
+func matchCodeBlock(line *Line) *ast.CodeBlock {
+    if line.Indent >= 4 {
+        return ast.NewCodeBlock(false)
     }
     return nil
 }

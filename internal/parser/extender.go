@@ -50,6 +50,16 @@ func (e *BlockExtender) VisitListItem(node ast.Node) {
 }
 
 func (e *BlockExtender) VisitCodeBlock(node ast.Node) {
+    if codeBlock, ok := node.(*ast.CodeBlock); ok {
+        if codeBlock.IsFenced {
+
+        } else {
+            if e.line.IsBlank || e.line.Indent >= 4 {
+                e.lastMatch = node
+                e.line.ConsumeAll()
+            }
+        }
+    }
 }
 
 func (e *BlockExtender) VisitHTMLBlock(node ast.Node) {

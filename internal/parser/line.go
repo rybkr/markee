@@ -10,7 +10,7 @@ type Line struct {
 
 func NewLine(raw string) *Line {
 	var offset, indent int
-	for indent, offset = 0, 0; offset < len(raw); offset++ {
+	for indent, offset = 0, 0; offset < min(4, len(raw)); offset++ {
 		if raw[offset] == ' ' {
 			indent++
 		} else if raw[offset] == '\t' {

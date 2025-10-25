@@ -42,6 +42,8 @@ func runParse(cmd *cobra.Command, args []string) {
 	}
 
 	doc := parser.Parse(input)
+    printTree(doc, 0)
+    fmt.Println("\n")
     html := renderer.RenderHTML(doc)
     fmt.Println(html)
 }
