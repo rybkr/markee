@@ -12,8 +12,6 @@ type Node interface {
     LastChild() Node
     NextSibling() Node
 	AddChild(Node)
-	IsOpen() bool
-	SetOpen(bool)
 	Accept(Visitor)
 }
 
@@ -29,7 +27,6 @@ func New(t NodeType) BaseNode {
 		nodeType: t,
 		parent:   nil,
 		children: make([]Node, 0),
-		isOpen:   false,
 	}
 }
 
@@ -79,14 +76,6 @@ func (n *BaseNode) NextSibling() Node {
 func (n *BaseNode) AddChild(child Node) {
 	child.SetParent(n)
 	n.children = append(n.children, child)
-}
-
-func (n *BaseNode) IsOpen() bool {
-	return n.isOpen
-}
-
-func (n *BaseNode) SetOpen(isOpen bool) {
-	n.isOpen = isOpen
 }
 
 func (n *BaseNode) Accept(v Visitor) { return }
