@@ -58,6 +58,9 @@ func (r *HTMLRenderer) VisitParagraph(node ast.Node) {
 func (r *HTMLRenderer) VisitContent(node ast.Node) {
     if content, ok := node.(*ast.Content); ok {
         r.output.WriteString(content.Literal)
+        if node.NextSibling() != nil {
+            r.output.WriteString("\n")
+        }
         ast.WalkChildren(r, node)
     }
 }

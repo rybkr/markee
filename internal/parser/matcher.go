@@ -34,6 +34,9 @@ func matchNewBlock(line *Line, currentTip ast.Node) ast.Node {
 			continue
 		}
 		if block := matcher.match(line); block != nil {
+            if block.Type() == ast.NodeParagraph && currentTip.Type() == ast.NodeParagraph {
+                return nil
+            }
 			return block
 		}
 	}
