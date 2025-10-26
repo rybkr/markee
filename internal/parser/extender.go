@@ -34,15 +34,15 @@ func (e *BlockExtender) VisitDocument(node ast.Node) {
 }
 
 func (e *BlockExtender) VisitBlockQuote(node ast.Node) {
-	if e.line.Indent < 4 && e.line.Peek(0) == '>' {
-		e.line.Consume(1)
+    if e.line.Indent < 4 && e.line.Peek(0) == '>' {
+        e.line.Consume(1)
         if len(e.line.Content) > 0 && e.line.Content[0] == ' ' {
             e.line.Consume(1)
         }
-		e.lastMatch = node
+        e.lastMatch = node
         e.allMatched = append(e.allMatched, node)
         ast.WalkLastChild(e, node)
-	}
+    }
 }
 
 func (e *BlockExtender) VisitList(node ast.Node) {
@@ -66,12 +66,17 @@ func (e *BlockExtender) VisitCodeBlock(node ast.Node) {
     if codeBlock.IsFenced {
         if e.isClosingFence(codeBlock) {
             e.line.ConsumeAll()
+            codeBlock.SetOpen(false)
             return
         }
         e.lastMatch = node
         e.allMatched = append(e.allMatched, node)
     } else {
-        if e.line.IsBlank || e.line.Indent >= 4 {
+        if e.line.IsBlank {
+            e.lastMatch = node
+            e.allMatched = append(e.allMatched, node)
+        } else if e.line.Indent >= 4 {
+            e.line.Consume(4)
             e.lastMatch = node
             e.allMatched = append(e.allMatched, node)
         }
@@ -79,14 +84,25 @@ func (e *BlockExtender) VisitCodeBlock(node ast.Node) {
 }
 
 func (e *BlockExtender) isClosingFence(codeBlock *ast.CodeBlock) bool {
+    if e.line.Indent >= 4 {
+        return false
+    }
+
     fenceCount := 0
     for fenceCount < len(e.line.Content) && e.line.Content[fenceCount] == codeBlock.FenceChar {
         fenceCount++
     }
-    
-    if fenceCount < 3 {
+    if fenceCount < codeBlock.FenceLen {
         return false
     }
+
+    rest := e.line.Content[fenceCount:]
+    for i := 0; i < len(rest); i++ {
+        if rest[i] != ' ' && rest[i] != '\t' {
+            return false
+        }
+    }
+    
     return true
 }
 

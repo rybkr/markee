@@ -136,6 +136,7 @@ func matchParagraph(line *Line) ast.Node {
 // See: https://spec.commonmark.org/0.31.2/#indented-code-blocks
 func matchIndentedCodeBlock(line *Line) ast.Node {
 	if line.Indent >= 4 {
+        line.Consume(4)
 		return ast.NewCodeBlock(false)
 	}
 	return nil
@@ -159,10 +160,37 @@ func matchFencedCodeBlock(line *Line) ast.Node {
 
 		codeBlock := ast.NewCodeBlock(true)
 		codeBlock.FenceChar = fenceStr[0]
+        codeBlock.FenceLen = len(fenceStr)
 		codeBlock.Language = infoString
 
 		line.ConsumeAll()
 		return codeBlock
 	}
 	return nil
+}
+
+// See: https://spec.commonmark.org/0.31.2/#setext-headings
+func matchSetextHeadingUnderline(line *Line, currentTip ast.Node) int {
+    // Only check if we're in an open paragraph
+    if currentTip.Type() != ast.NodeParagraph || !currentTip.IsOpen() {
+        return 0
+    }
+    
+    if line.Indent >= 4 {
+        return 0
+    }
+    
+    // Check for = underline (level 1)
+    reEquals := regexp.MustCompile(`^=+[ \t]*$`)
+    if reEquals.MatchString(line.Content) {
+        return 1
+    }
+    
+    // Check for - underline (level 2)
+    reHyphens := regexp.MustCompile(`^-+[ \t]*$`)
+    if reHyphens.MatchString(line.Content) {
+        return 2
+    }
+    
+    return 0
 }

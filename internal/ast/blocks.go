@@ -67,6 +67,7 @@ type CodeBlock struct {
 	Language  string
 	IsFenced  bool
 	FenceChar byte
+    FenceLen  int
 }
 
 func NewCodeBlock(isFenced bool) *CodeBlock {
