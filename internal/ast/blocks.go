@@ -63,6 +63,7 @@ func (l *ListItem) Accept(v Visitor) {
 
 type CodeBlock struct {
 	BaseNode
+    Literal   string
 	Language  string
 	IsFenced  bool
 	FenceChar byte

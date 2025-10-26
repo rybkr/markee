@@ -3,6 +3,7 @@ package parser
 import (
 	"markee/internal/ast"
 	"regexp"
+	"strings"
 )
 
 type blockMatcher struct {
@@ -29,14 +30,26 @@ func cannotInterruptParagraph(n ast.Node) bool {
 }
 
 func matchNewBlock(line *Line, currentTip ast.Node) ast.Node {
+	if currentTip.Type() == ast.NodeCodeBlock {
+		if fence := matchFencedCodeBlock(line); fence != nil {
+			if fence.(*ast.CodeBlock).FenceChar == currentTip.(*ast.CodeBlock).FenceChar {
+				line.ConsumeAll()
+				currentTip.SetOpen(false)
+				return nil
+			}
+		}
+		line.Content = strings.Repeat(" ", line.Indent) + line.Content
+		return nil
+	}
+
 	for _, matcher := range blockMatchers {
 		if !matcher.canInterrupt(currentTip) {
 			continue
 		}
 		if block := matcher.match(line); block != nil {
-            if block.Type() == ast.NodeParagraph && currentTip.Type() == ast.NodeParagraph {
-                return nil
-            }
+			if block.Type() == ast.NodeParagraph && currentTip.Type() == ast.NodeParagraph {
+				return nil
+			}
 			return block
 		}
 	}
@@ -63,50 +76,50 @@ func matchThematicBreak(line *Line) ast.Node {
 
 // See: https://spec.commonmark.org/0.31.2/#atx-headings
 func matchATXHeading(line *Line) ast.Node {
-    if line.Indent >= 4 {
-        return nil
-    }
+	if line.Indent >= 4 {
+		return nil
+	}
 
-    // ^(#{1,6}) : 1-6 '#' characters
-    // [ \t]*    : optional spaces/tabs
-    // (?:#*)?   : optional trailing hashes (no space required when empty)
-    // [ \t]*$   : optional trailing whitespace
-    reATXHeadingEmpty := regexp.MustCompile(`^(#{1,6})[ \t]*(?:#*)?[ \t]*$`)
+	// ^(#{1,6}) : 1-6 '#' characters
+	// [ \t]*    : optional spaces/tabs
+	// (?:#*)?   : optional trailing hashes (no space required when empty)
+	// [ \t]*$   : optional trailing whitespace
+	reATXHeadingEmpty := regexp.MustCompile(`^(#{1,6})[ \t]*(?:#*)?[ \t]*$`)
 
-    if matches := reATXHeadingEmpty.FindStringSubmatch(line.Content); matches != nil {
-        level := len(matches[1])
-        line.ConsumeAll()
-        return ast.NewHeading(level)
-    }
+	if matches := reATXHeadingEmpty.FindStringSubmatch(line.Content); matches != nil {
+		level := len(matches[1])
+		line.ConsumeAll()
+		return ast.NewHeading(level)
+	}
 
 	//      (#{1,6}) : opening sequence of 1-6 '#' characters
 	//        [ \t]+ : space/tab after '#' sequence, needed if heading has content
 	//      ([^#]*?) : capture content lazily as to not eat trailing hashes
 	// (?:[ \t]+#*)? : optional closing '#' sequence, preceded by as least one space/tab
 	//        [ \t]* : optional space/tab at the end
-    reATXHeadingWithContent := regexp.MustCompile(`^(#{1,6})[ \t]+(.*?)(?:[ \t]+#*)?[ \t]*$`)
+	reATXHeadingWithContent := regexp.MustCompile(`^(#{1,6})[ \t]+(.*?)(?:[ \t]+#*)?[ \t]*$`)
 
-    if matches := reATXHeadingWithContent.FindStringSubmatch(line.Content); matches != nil {
-        level := len(matches[1])
-        line.Consume(len(matches[1]))
-        line.ConsumeWhitespace()
-        line.KeepUntil(len(matches[2]))
-        return ast.NewHeading(level)
-    }
+	if matches := reATXHeadingWithContent.FindStringSubmatch(line.Content); matches != nil {
+		level := len(matches[1])
+		line.Consume(len(matches[1]))
+		line.ConsumeWhitespace()
+		line.KeepUntil(len(matches[2]))
+		return ast.NewHeading(level)
+	}
 
 	return nil
 }
 
 // See: https://spec.commonmark.org/0.31.2/#block-quotes
 func matchBlockQuote(line *Line) ast.Node {
-    if line.Indent >= 4 {
-        return nil
-    }
+	if line.Indent >= 4 {
+		return nil
+	}
 	if line.Peek(0) == '>' {
 		line.Consume(1)
-        if line.Peek(0) == ' ' {
-            line.Consume(1)
-        }
+		if line.Peek(0) == ' ' {
+			line.Consume(1)
+		}
 		return ast.NewBlockQuote()
 	}
 	return nil
@@ -114,7 +127,7 @@ func matchBlockQuote(line *Line) ast.Node {
 
 // See: https://spec.commonmark.org/0.31.2/#paragraphs
 func matchParagraph(line *Line) ast.Node {
-	if !line.IsBlank {
+	if !line.IsBlank && !line.IsEmpty() {
 		return ast.NewParagraph()
 	}
 	return nil
@@ -130,26 +143,26 @@ func matchIndentedCodeBlock(line *Line) ast.Node {
 
 // See: https://spec.commonmark.org/0.31.2/#fenced-code-blocks
 func matchFencedCodeBlock(line *Line) ast.Node {
-    if line.Indent >= 4 {
-        return nil
-    }
+	if line.Indent >= 4 {
+		return nil
+	}
 
-    // ^(`{3,}|~{3,}) : at least 3 backticks or tildes
-    // [ \t]*         : optional spaces/tabs
-    // ([^ \t`]*)     : info string (no spaces, tabs, or backticks)
-    // [ \t]*$        : optional trailing whitespace
-    reFence := regexp.MustCompile("^(`{3,}|~{3,})[ \\t]*([^ \\t`]*)[ \\t]*$")
+	// ^(`{3,}|~{3,}) : at least 3 backticks or tildes
+	// [ \t]*         : optional spaces/tabs
+	// ([^ \t`]*)     : info string (no spaces, tabs, or backticks)
+	// [ \t]*$        : optional trailing whitespace
+	reFence := regexp.MustCompile("^(`{3,}|~{3,})[ \\t]*([^ \\t`]*)[ \\t]*$")
 
-    if matches := reFence.FindStringSubmatch(line.Content); matches != nil {
-        fenceStr := matches[1]
-        infoString := matches[2]
-        
-        codeBlock := ast.NewCodeBlock(true)
-        codeBlock.FenceChar = fenceStr[0]
-        codeBlock.Language = infoString
-        
-        line.ConsumeAll()
-        return codeBlock
-    }
+	if matches := reFence.FindStringSubmatch(line.Content); matches != nil {
+		fenceStr := matches[1]
+		infoString := matches[2]
+
+		codeBlock := ast.NewCodeBlock(true)
+		codeBlock.FenceChar = fenceStr[0]
+		codeBlock.Language = infoString
+
+		line.ConsumeAll()
+		return codeBlock
+	}
 	return nil
 }
