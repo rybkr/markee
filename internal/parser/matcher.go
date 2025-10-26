@@ -67,6 +67,18 @@ func matchATXHeading(line *Line) ast.Node {
         return nil
     }
 
+    // ^(#{1,6}) : 1-6 '#' characters
+    // [ \t]*    : optional spaces/tabs
+    // (?:#*)?   : optional trailing hashes (no space required when empty)
+    // [ \t]*$   : optional trailing whitespace
+    reATXHeadingEmpty := regexp.MustCompile(`^(#{1,6})[ \t]*(?:#*)?[ \t]*$`)
+
+    if matches := reATXHeadingEmpty.FindStringSubmatch(line.Content); matches != nil {
+        level := len(matches[1])
+        line.ConsumeAll()
+        return ast.NewHeading(level)
+    }
+
 	//      (#{1,6}) : opening sequence of 1-6 '#' characters
 	//        [ \t]+ : space/tab after '#' sequence, needed if heading has content
 	//      ([^#]*?) : capture content lazily as to not eat trailing hashes
@@ -78,19 +90,7 @@ func matchATXHeading(line *Line) ast.Node {
         level := len(matches[1])
         line.Consume(len(matches[1]))
         line.ConsumeWhitespace()
-        return ast.NewHeading(level)
-    }
-
-	// Alternative pattern for empty headings, does not need space after `#` sequence
-    // ^(#{1,6}) : 1-6 '#' characters
-    // [ \t]*    : optional spaces/tabs
-    // (?:#*)?   : optional trailing hashes (no space required when empty)
-    // [ \t]*$   : optional trailing whitespace
-    reATXHeadingEmpty := regexp.MustCompile(`^(#{1,6})[ \t]*(?:#*)?[ \t]*$`)
-
-    if matches := reATXHeadingEmpty.FindStringSubmatch(line.Content); matches != nil {
-        level := len(matches[1])
-        line.ConsumeAll()
+        line.KeepUntil(len(matches[2]))
         return ast.NewHeading(level)
     }
 

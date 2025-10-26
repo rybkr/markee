@@ -70,7 +70,7 @@ func (f *BlockFinalizer) VisitHeading(node ast.Node) {
         }
         child = next
     }
-    
+
     if len(content) > 0 {
         ParseInlines(node, content)
     }

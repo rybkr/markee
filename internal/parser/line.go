@@ -62,6 +62,13 @@ func (l *Line) ConsumeAll() int {
     return consumed
 }
 
+func (l *Line) KeepUntil(n int) {
+    if n > len(l.Content) {
+        return
+    }
+    l.Content = l.Content[:n]
+}
+
 func (l *Line) Peek(i int) byte {
 	if i >= len(l.Content) {
 		return 0
