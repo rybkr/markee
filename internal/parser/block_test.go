@@ -428,3 +428,16 @@ func TestFencedCodeBlock(t *testing.T) {
     line2 := assertChild(t, codeBlock, 1, ast.NodeContent)
     assertContent(t, line2, " >")
 }
+
+func TestFencedCodeBlockBacktick(t *testing.T) {
+    input := "```\n<\n >\n```"
+    doc := Parse(input)
+    assertNodeType(t, doc, ast.NodeDocument)
+    assertChildCount(t, doc, 1)
+    codeBlock := assertChild(t, doc, 0, ast.NodeCodeBlock)
+    assertChildCount(t, codeBlock, 2)
+    line1 := assertChild(t, codeBlock, 0, ast.NodeContent)
+    assertContent(t, line1, "<")
+    line2 := assertChild(t, codeBlock, 1, ast.NodeContent)
+    assertContent(t, line2, " >")
+}
